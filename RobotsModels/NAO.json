@@ -1,0 +1,65 @@
+{
+  "sensors": {
+    "HeadVision1": {"name": "vision_sensor1", "model": "vision_sensor"},
+    "HeadVision2": {"name": "vision_sensor2", "model": "vision_sensor"},
+
+    "LFootForce1": {"name": "NAO_LFsrFL", "model": "force_sensor"},
+    "LFootForce2": {"name": "NAO_LFsrFR", "model": "force_sensor"},
+    "LFootForce3": {"name": "NAO_LFsrRL", "model": "force_sensor"},
+    "LFootForce4": {"name": "NAO_LFsrRR", "model": "force_sensor"},
+
+    "RFootForce1": {"name": "NAO_RFsrFL", "model": "force_sensor"},
+    "RFootForce2": {"name": "NAO_RFsrFR", "model": "force_sensor"},
+    "RFootForce3": {"name": "NAO_RFsrRL", "model": "force_sensor"},
+    "RFootForce4": {"name": "NAO_RFsrRR", "model": "force_sensor"}
+  },
+
+  "actuators": {
+    "HeadYawJoint": {"name": "HeadYaw", "model": "joint"},
+    "HeadPitchJoint": {"name": "HeadPitch", "model": "joint"},
+
+    "LShoulderPitch": {"name": "LShoulderPitch3", "model": "joint"},
+    "LShoulderRoll": {"name": "LShoulderRoll3", "model":  "joint"},
+    "LElbowYaw": {"name": "LElbowYaw3", "model":  "joint"},
+    "LElbowRoll": {"name": "LElbowRoll3", "model":  "joint"},
+    "LWristYaw": {"name": "LWristYaw3", "model":  "joint"},
+
+    "LThumbBase": {"name": "NAO_LThumbBase", "model":  "joint"},
+    "LThumbMiddle": {"name": "Revolute_joint8", "model":  "joint"},
+    "LLFingerBase": {"name": "NAO_LLFingerBase", "model":  "joint"},
+    "LLFingerMiddle": {"name": "Revolute_joint12", "model":  "joint"},
+    "LLFingerTop": {"name": "Revolute_joint14", "model":  "joint"},
+    "LRFingerBase": {"name": "NAO_LRFingerBase", "model":  "joint"},
+    "LRFingerMiddle": {"name": "Revolute_joint11", "model":  "joint"},
+    "LRFingerTop": {"name": "Revolute_joint13", "model":  "joint"},
+
+    "RShoulderPitch": {"name": "RShoulderPitch3", "model": "joint"},
+    "RShoulderRoll": {"name": "RShoulderRoll3", "model":  "joint"},
+    "RElbowYaw": {"name": "RElbowYaw3", "model":  "joint"},
+    "RElbowRoll": {"name": "RElbowRoll3", "model":  "joint"},
+    "RWristYaw": {"name": "RWristYaw3", "model":  "joint"},
+
+    "RThumbBase": {"name": "NAO_RThumbBase", "model":  "joint"},
+    "RThumbMiddle": {"name": "Revolute_joint0", "model":  "joint"},
+    "RLFingerBase": {"name": "NAO_RLFingerBase", "model":  "joint"},
+    "RLFingerMiddle": {"name": "Revolute_joint5", "model":  "joint"},
+    "RLFingerTop": {"name": "Revolute_joint6", "model":  "joint"},
+    "RRFingerBase": {"name": "NAO_RRFingerBase", "model":  "joint"},
+    "RRFingerMiddle": {"name": "Revolute_joint2", "model":  "joint"},
+    "RRFingerTop": {"name": "Revolute_joint3", "model":  "joint"},
+
+    "LHipYawPitchJoint": {"name": "LHipYawPitch3", "model": "joint"},
+    "LHipRollJoint": {"name": "LHipRoll3", "model": "joint"},
+    "LHipPitchJoint": {"name": "LHipPitch3", "model": "joint"},
+    "LKneePitchJoint": {"name": "LKneePitch3", "model": "joint"},
+    "LAnklePitchJoint": {"name": "LAnklePitch3", "model": "joint"},
+    "LAnkleRollJoint": {"name": "LAnkleRoll3", "model": "joint"},
+
+    "RHipYawPitchJoint": {"name": "RHipYawPitch3", "model": "joint"},
+    "RHipRollJoint": {"name": "RHipRoll3", "model": "joint"},
+    "RHipPitchJoint": {"name": "RHipPitch3", "model": "joint"},
+    "RKneePitchJoint": {"name": "RKneePitch3", "model": "joint"},
+    "RAnklePitchJoint": {"name": "RAnklePitch3", "model": "joint"},
+    "RAnkleRollJoint": {"name": "RAnkleRoll3", "model": "joint"}
+  }
+}
