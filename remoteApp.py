@@ -16,6 +16,9 @@ See the License for the specific language governing permissions and limitations 
 from BlocksBot.coppeliaSimBinder import Simulation
 from BlocksBot import RealRobotBody, SimulationRobotBody
 
+import time
+from PIL import Image as I
+import matplotlib.pyplot as plt
 
 def main():
     naoFile = "RobotsModels/NAO.json"
@@ -28,15 +31,24 @@ def main():
     print("NAO_vision1 handle: " + str(s.getObjectStateAndHandle("NAO_vision1")))
     print("NAO_vision2 handle: " + str(s.getObjectStateAndHandle("NAO_vision2")))
     print("Not present object handle: " + str(s.getObjectStateAndHandle("obj")))
-    code, res, img = s.readVisionSensor("NAO_vision1", True, True)
-    print(img)
-
     simNao = SimulationRobotBody("naoSim1", "Naetto", "NAO")
     simNao.buildFormJsonFile(naoFile)
     s.addSimRobot(simNao)
     simNao.printComponents()
     s.setSimRobotsComponetsStateAndHandles()
     simNao.printComponents()
+
+    s.readVisionSensorImage("NAO_vision1", True, False)
+    plt.ion()
+    # Initialiazation of the figure
+    time.sleep(1)
+    code, resolution, image = s.readVisionSensorImage("NAO_vision1", True, False)
+    print(code)
+    print(resolution)
+    im = I.new("RGB", (resolution[0], resolution[1]), "white")
+    plotimg = plt.imshow(im)
+    plt.show()
+    time.sleep(1)
 
     s.closeConnection()
 
