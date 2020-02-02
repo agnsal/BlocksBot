@@ -100,42 +100,91 @@ class Simulation:
         :param objName: name of the sensor as defined in the simulator
         :return: state, handle
         '''
-        objName = str(objName)
-        state, handle = sim.simxGetObjectHandle(self.__clientID, objName, sim.simx_opmode_blocking)
-        return state, handle
+        assert isinstance(objName, str)
+        return sim.simxGetObjectHandle(self.__clientID, objName, sim.simx_opmode_blocking)
 
     def readProximitySensor(self, sensorName, blocking=True):
         '''
         Implements sensor reading from the robot simulator
         :param sensorName: name of the sensor as defined in the simulator
-        :return: out:
+        :param blocking: boolean
+        :return: returnCode, detectionState, detectedPoint, detectedObjectHandle, detectedSurfaceNormalVector
         '''
-        sensorName = str(sensorName)
-        blocking = bool(blocking)
+        assert isinstance(sensorName, str)
+        assert isinstance(blocking, bool)
         if blocking:
             mode = sim.simx_opmode_blocking
         else:
             mode = sim.simx_opmode_oneshot
         state, handle = self.getObjectStateAndHandle(sensorName)
-        out = sim.simxReadProximitySensor(self.__clientID, handle, mode)
-        return out
+        return sim.simxReadProximitySensor(self.__clientID, handle, mode)
 
     def readVisionSensor(self, sensorName, colorImage=True, blocking=True):
         '''
         Implements sensor reading from the robot simulator
         :param sensorName: name of the sensor as defined in the simulator
-        :return: out:
+        :param colorImage: boolean
+        :param blocking: boolean
+        :return: returnCode, resolution, image
         '''
-        sensorName = str(sensorName)
-        blocking = bool(blocking)
-        colorImage = int(bool(colorImage))
+        assert isinstance(sensorName, str)
+        assert isinstance(blocking, bool)
+        assert isinstance(colorImage, bool)
         if blocking:
             mode = sim.simx_opmode_blocking
         else:
             mode = sim.simx_opmode_oneshot
         state, handle = self.getObjectStateAndHandle(sensorName)
-        returnCode, resolution, image = sim.simxGetVisionSensorImage(self.__clientID, handle, colorImage, mode)
-        return returnCode, resolution, image
+        return sim.simxGetVisionSensorImage(self.__clientID, handle, colorImage, mode)
+
+    def getJointForce(self, jointName, blocking=True):
+        '''
+        Retrieves the force or torque applied to a joint along/about its active axis
+        :param jointName: name of the joint as defined in the simulator
+        :param blocking: boolean
+        :return: returnCode, force
+        '''
+        assert isinstance(jointName, str)
+        assert isinstance(blocking, bool)
+        state, handle = self.getObjectStateAndHandle(jointName)
+        if blocking:
+            mode = sim.simx_opmode_blocking
+        else:
+            mode = sim.simx_opmode_oneshot
+        return sim.simxGetJointForce(self.__clientID, handle, mode)
+
+    def getJointMatrix(self, jointName, blocking=True):
+        '''
+        Retrieves the intrinsic transformation matrix of a joint (the transformation caused by the joint movement)
+        :param jointName: name of the joint as defined in the simulator
+        :param blocking: boolean
+        :return: returnCode, matrix (array containing 12 values)
+        '''
+        assert isinstance(jointName, str)
+        assert isinstance(blocking, bool)
+        state, handle = self.getObjectStateAndHandle(jointName)
+        if blocking:
+            mode = sim.simx_opmode_blocking
+        else:
+            mode = sim.simx_opmode_oneshot
+        return sim.simxGetJointMatrix(self.__clientID, handle, mode)
+
+    def getJointPosition(self, jointName, blocking=True):
+        '''
+        Retrieves the intrinsic position of a joint
+        :param jointName: name of the joint as defined in the simulator
+        :param blocking: boolean
+        :return: returnCode, position (intrinsic position of the joint. This is a one-dimensional value: if the joint
+        is revolute, the rotation angle is returned, if the joint is prismatic, the translation amount is returned, etc)
+        '''
+        assert isinstance(jointName, str)
+        assert isinstance(blocking, bool)
+        state, handle = self.getObjectStateAndHandle(jointName)
+        if blocking:
+            mode = sim.simx_opmode_blocking
+        else:
+            mode = sim.simx_opmode_oneshot
+        return sim.simxGetJointPosition(self.__clientID, handle, mode)
 
 
 def main():
