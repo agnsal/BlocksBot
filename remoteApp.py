@@ -17,8 +17,7 @@ from BlocksBot.coppeliaSimBinder import Simulation
 from BlocksBot import RealRobotBody, SimulationRobotBody
 
 import time
-from PIL import Image as I
-import matplotlib.pyplot as plt
+from PIL import Image
 
 def main():
     naoFile = "RobotsModels/NAO.json"
@@ -28,9 +27,6 @@ def main():
 
     s = Simulation()
     s.connect()
-    print("NAO_vision1 handle: " + str(s.getObjectStateAndHandle("NAO_vision1")))
-    print("NAO_vision2 handle: " + str(s.getObjectStateAndHandle("NAO_vision2")))
-    print("Not present object handle: " + str(s.getObjectStateAndHandle("obj")))
     simNao = SimulationRobotBody("naoSim1", "Naetto", "NAO")
     simNao.buildFormJsonFile(naoFile)
     s.addSimRobot(simNao)
@@ -38,18 +34,14 @@ def main():
     s.setSimRobotsComponetsStateAndHandles()
     simNao.printComponents()
 
-    s.readVisionSensorImage("NAO_vision1", True, False)
-    plt.ion()
-    # Initialiazation of the figure
-    time.sleep(1)
-    code, resolution, image = s.readVisionSensorImage("NAO_vision1", True, False)
-    print(code)
-    print(resolution)
-    im = I.new("RGB", (resolution[0], resolution[1]), "white")
-    plotimg = plt.imshow(im)
-    plt.show()
-    time.sleep(1)
-
+    for i in range(0, 10):
+        code, resolution, image = s.readVisionSensorImage("NAO_vision1", True, True)
+        img = Image.new("RGB", (resolution[0], resolution[1]), "white")
+        img.putdata(image)
+        img = img.rotate(angle=180)
+        img.show(title=i)
+        time.sleep(1)
+        del img
     s.closeConnection()
 
 

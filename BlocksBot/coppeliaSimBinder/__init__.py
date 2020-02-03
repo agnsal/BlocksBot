@@ -168,7 +168,7 @@ class Simulation:
         assert isinstance(colorImage, bool)
         mode = self.getProperSimMode(blocking)
         state, handle = self.getObjectStateAndHandle(sensorName)
-        return sim.simxGetVisionSensorImage(self.__clientID, handle, colorImage, mode)
+        return sim.simxGetVisionSensorImage(self.__clientID, handle, int(colorImage), mode)
 
     def readExternalVisionSensorImage(self, sensorName, externalImage, options, blocking=True):
         '''
