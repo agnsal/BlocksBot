@@ -259,6 +259,8 @@ class Simulation:
         assert isinstance(jointName, str)
         assert isinstance(position, int) or isinstance(position, float)
         state, handle = self.getObjectStateAndHandle(jointName)
+        print("HANDLE")
+        print(handle)
         mode = self.getProperSimMode(blocking)
         return sim.simxSetJointPosition(self.__clientID, handle, position, mode)
 
