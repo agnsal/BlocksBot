@@ -72,6 +72,7 @@ def main():
         moveRangeO = 100
         moveRangeV = 20
         _, img = cap.read()
+        img = cv2.flip(img, 1)
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         faces = faceCascade.detectMultiScale(gray, 1.1, 4)
         cv2.imshow('img', img)
@@ -82,17 +83,17 @@ def main():
             cv2.imshow('img', img)
             (x, y, w, h) = faces[0]
             xMax, yMax = img.shape[0:2]
-            middleX = xMax/2
-            middleY = yMax/2
-            middlePosX = (w/2) + x
-            middlePosY = (h/2) + y
+            middleX = xMax / 2
+            middleY = yMax / 2
+            middlePosX = (w / 2) + x
+            middlePosY = (h / 2) + y
             print("New Pos: " + str(x) + " - " + str(y))
             if middlePosX > middleX + moveRangeO:
                 print("Nao Direction = R")
-                stepTurnNeckL(s)
+                stepTurnNeckR(s)
             elif middlePosX < middleX - moveRangeO:
                 print("Nao Direction = L")
-                stepTurnNeckR(s)
+                stepTurnNeckL(s)
             else:
                 neckInOOHorizontal(s)
             if middlePosY > middleY - moveRangeV:
