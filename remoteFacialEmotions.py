@@ -15,17 +15,16 @@ See the License for the specific language governing permissions and limitations 
 
 
 from Configs import API_KEY, API_SECRET
-from urllib.request import HTTPError
-import base64
-import requests
 
-def getFacesAndEmotions():
+from urllib.request import HTTPError
+import requests
+from RedisManager import getBase64FileFromRedis
+
+
+def getFacesAndEmotions(base64Img):
     httpDetect = 'https://api-us.faceplusplus.com/facepp/v3/detect'
     key = API_KEY
     secret = API_SECRET
-    filepath = "Files/Res.jpg"
-    with open(filepath, "rb") as image_file:
-        base64Img = base64.b64encode(image_file.read())
     data = {
         'api_key': key,
         'api_secret': secret,
@@ -37,10 +36,23 @@ def getFacesAndEmotions():
         resp = requests.post(httpDetect, data)
         #get response
         faces = resp.json()
-        print(faces["faces"][0]["attributes"]["emotion"])
         return faces
     except HTTPError as e:
         print(e.read())
 
 
-getFacesAndEmotions()
+def main():
+    i = 0
+    while True:
+        # print(i)  # Test
+        if i == 50:
+            data = getFacesAndEmotions(getBase64FileFromRedis("capture", "localhost", 0))
+            if data:
+                emotions = data["faces"][0]["attributes"]["emotion"]
+                print("EMOTIONS: " + str(emotions))
+            i = 0
+        i += 1
+
+
+if __name__ == '__main__':
+    main()
