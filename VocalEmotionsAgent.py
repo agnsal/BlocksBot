@@ -13,54 +13,83 @@ an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express o
 See the License for the specific language governing permissions and limitations under the License
 '''
 
-
+import scipy.io.wavfile
 import Vokaturi
-import sounddevice as sd
+import pyaudio
+import wave
 
-fs = 44100
-duration = 5  # seconds
+def audioRecordToFile(audioFile, audioSeconds, format, channels, rate, framesPerBuffer):
+    assert isinstance(audioFile, str)
+    assert isinstance(channels, int)
+    assert isinstance(rate, int)
+    assert isinstance(framesPerBuffer, int)
+    assert isinstance(audioSeconds, int) or isinstance(audioSeconds, float)
+    audio = pyaudio.PyAudio()
+    stream = audio.open(format=format, channels=channels, rate=rate, input=True, frames_per_buffer=framesPerBuffer)
+    print("recording...")  # Test
+    frames = []
+    for i in range(0, int(rate / framesPerBuffer * audioSeconds)):
+        data = stream.read(framesPerBuffer)
+        frames.append(data)
+    stream.stop_stream()
+    stream.close()
+    audio.terminate()
+    waveFile = wave.open(audioFile, 'wb')
+    waveFile.setnchannels(channels)
+    waveFile.setsampwidth(audio.get_sample_size(format))
+    waveFile.setframerate(rate)
+    waveFile.writeframes(b''.join(frames))
+    waveFile.close()
 
-record = sd.rec(duration * fs, samplerate=fs, channels=2, dtype='float64')
-print("Recording...")
-sd.wait()
-print("Recorded")
 
-#sd.play(record, fs)  # Test
-#sd.wait()  # Test
+def extractEmotionsFromAudioFile(audioFile):
+    print("Reading sound file...")  # Test
+    (sampleRate, samples) = scipy.io.wavfile.read(audioFile)
+    bufferLen = len(samples)
+    cBuffer = Vokaturi.SampleArrayC(bufferLen)
+    if samples.ndim == 1:
+        cBuffer[:] = samples[:] / 32768.0  # mono
+    else:
+        cBuffer[:] = 0.5 * (samples[:, 0] + 0.0 + samples[:, 1]) / 32768.0  # stereo
+    voice = Vokaturi.Voice(sampleRate, bufferLen)
+    voice.fill(bufferLen, cBuffer)
+    print("Extracting emotions from VokaturiVoice...")  # Test
+    quality = Vokaturi.Quality()
+    emotionProbabilities = Vokaturi.EmotionProbabilities()
+    voice.extract(quality, emotionProbabilities)
+    emotions = {}
+    if quality.valid:
+        print("Neutral: %.3f" % emotionProbabilities.neutrality)
+        print("Happy: %.3f" % emotionProbabilities.happiness)
+        print("Sad: %.3f" % emotionProbabilities.sadness)
+        print("Angry: %.3f" % emotionProbabilities.anger)
+        print("Fear: %.3f" % emotionProbabilities.fear)
+        emotions["neutral"] = emotionProbabilities.neutrality
+        emotions["happy"] = emotionProbabilities.happiness
+        emotions["sad"] = emotionProbabilities.sadness
+        emotions["angry"] = emotionProbabilities.anger
+        emotions["fear"] = emotionProbabilities.fear
+    voice.destroy()
+    return emotions
 
-print("Loading library...")
-Vokaturi.load("lib/open/win/OpenVokaturi-3-3-win64.dll")
-print("Analyzed by: %s" % Vokaturi.versionAndLicense())
 
-print("Allocating Vokaturi sample array...")
-bufferLen = len(record)
-print("   %d samples, %d channels" % (bufferLen, record.ndim))
-c_buffer = Vokaturi.SampleArrayC(bufferLen)
-if record.ndim == 1:
-    c_buffer[:] = record[:] / 32768.0  # mono
-else:
-    c_buffer[:] = 0.5*(record[:,0]+0.0+record[:,1]) / 32768.0  # stereo
+def main():
+    print("Loading library...")
+    Vokaturi.load("lib/open/win/OpenVokaturi-3-3-win64.dll")
+    print("Analyzed by: %s" % Vokaturi.versionAndLicense())
 
-print("Creating VokaturiVoice...")
-voice = Vokaturi.Voice(fs, bufferLen)
+    format = pyaudio.paInt16
+    channels = 2
+    rate = 44100
+    framesPerBuffer = 1024
+    audioSeconds = 5
+    audioFile = "Files/test.wav"
 
-print("Filling VokaturiVoice with samples...")
-voice.fill(bufferLen, c_buffer)
+    while True:
+        audioRecordToFile(audioFile, audioSeconds, format, channels, rate, framesPerBuffer)
+        extractEmotionsFromAudioFile(audioFile)
 
-print("Extracting emotions from VokaturiVoice...")
-quality = Vokaturi.Quality()
-emotionProbabilities = Vokaturi.EmotionProbabilities()
-voice.extract(quality, emotionProbabilities)
 
-#print("Quality: " + str(quality.valid))
-#print("Emotions: " + str(emotionProbabilities.neutrality))
-
-if quality.valid:
-    print("Neutral: %.3f" % emotionProbabilities.neutrality)
-    print("Happy: %.3f" % emotionProbabilities.happiness)
-    print("Sad: %.3f" % emotionProbabilities.sadness)
-    print("Angry: %.3f" % emotionProbabilities.anger)
-    print("Fear: %.3f" % emotionProbabilities.fear)
-
-voice.destroy()
+if __name__ == '__main__':
+    main()
 
