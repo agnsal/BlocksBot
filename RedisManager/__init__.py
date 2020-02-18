@@ -24,7 +24,6 @@ def setBase64FileOnRedis(base64File, name, host="localhost", db=0):
     assert isinstance(db, int)
     r = redis.StrictRedis(host=host, db=db)
     r.set(name, base64File)
-    print(type(r.get(name)))
 
 
 def getBase64FileFromRedis(imageName, host="localhost", db=0):
@@ -33,3 +32,18 @@ def getBase64FileFromRedis(imageName, host="localhost", db=0):
     assert isinstance(db, int)
     r = redis.StrictRedis(host=host, db=db)
     return r.get(imageName)
+
+def setStringOnRedis(stringContent, name, host="localhost", db=0):
+    assert isinstance(stringContent, str)
+    assert isinstance(name, str)
+    assert isinstance(host, str)
+    assert isinstance(db, int)
+    r = redis.StrictRedis(host=host, db=db)
+    r.set(name, stringContent)
+
+def getStringFromRedis(name, host="localhost", db=0):
+    assert isinstance(name, str)
+    assert isinstance(host, str)
+    assert isinstance(db, int)
+    r = redis.StrictRedis(host=host, db=db, decode_responses=True)
+    return r.get(name)

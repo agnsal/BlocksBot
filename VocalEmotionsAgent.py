@@ -17,9 +17,12 @@ import scipy.io.wavfile
 import Vokaturi
 import pyaudio
 import wave
+import ast
 
-def audioRecordToFile(audioFile, audioSeconds, format, channels, rate, framesPerBuffer):
-    assert isinstance(audioFile, str)
+from RedisManager import setBase64FileOnRedis, getBase64FileFromRedis, setStringOnRedis, getStringFromRedis
+
+def audioRecordToRedis(set, audioSeconds, format, channels, rate, framesPerBuffer):
+    assert isinstance(set, str)
     assert isinstance(channels, int)
     assert isinstance(rate, int)
     assert isinstance(framesPerBuffer, int)
@@ -34,17 +37,31 @@ def audioRecordToFile(audioFile, audioSeconds, format, channels, rate, framesPer
     stream.stop_stream()
     stream.close()
     audio.terminate()
-    waveFile = wave.open(audioFile, 'wb')
+    '''
+    waveFile = wave.open(set + ".wav", 'wb')
     waveFile.setnchannels(channels)
     waveFile.setsampwidth(audio.get_sample_size(format))
     waveFile.setframerate(rate)
     waveFile.writeframes(b''.join(frames))
     waveFile.close()
+    '''
+    params = {'channels': channels, 'sampwidth': audio.get_sample_size(format), 'rate': rate}
+    setStringOnRedis("[" + str(frames) + ", " + str(params) + "]", set)
 
 
-def extractEmotionsFromAudioFile(audioFile):
+
+def extractEmotionsFromAudioFile(audio):
     print("Reading sound file...")  # Test
-    (sampleRate, samples) = scipy.io.wavfile.read(audioFile)
+    data = ast.literal_eval(getStringFromRedis(audio))
+    frames = data[0]
+    params = data[1]
+    waveFile = wave.open(audio + ".wav", 'wb')
+    waveFile.setnchannels(int(params['channels']))
+    waveFile.setsampwidth(params['sampwidth'])
+    waveFile.setframerate(params['rate'])
+    waveFile.writeframes(b''.join(frames))
+    waveFile.close()
+    (sampleRate, samples) = scipy.io.wavfile.read(audio + ".wav")
     bufferLen = len(samples)
     cBuffer = Vokaturi.SampleArrayC(bufferLen)
     if samples.ndim == 1:
@@ -83,11 +100,11 @@ def main():
     rate = 44100
     framesPerBuffer = 1024
     audioSeconds = 5
-    audioFile = "Files/test.wav"
+    audio = "test"
 
     while True:
-        audioRecordToFile(audioFile, audioSeconds, format, channels, rate, framesPerBuffer)
-        extractEmotionsFromAudioFile(audioFile)
+        audioRecordToRedis(audio, audioSeconds, format, channels, rate, framesPerBuffer)
+        extractEmotionsFromAudioFile(audio)
 
 
 if __name__ == '__main__':
