@@ -41,8 +41,12 @@ def getBodies(base64Img):
 
 
 def getAttitude(body):
-    #ToDo
-    return
+    RHandX = body['landmark']['right_hand']['x']
+    RShoulderX = body['landmark']['right_shoulder']['x']
+    LHandX = body['landmark']['left_hand']['x']
+    LShoulderX = body['landmark']['left_shoulder']['x']
+    bodyWidth = body['body_rectangle']['width']
+    return (abs(int(RHandX) - int(RShoulderX)) + abs(int(LHandX) - int(LShoulderX))) / int(bodyWidth)
 
 
 def main():
@@ -56,7 +60,8 @@ def main():
                 bodies = data['skeletons']
                 for b in bodies:
                     print(b)  # Test
-                    getAttitude(b)
+                    attitude = getAttitude(b)
+                    print(attitude)  # Test
             i = 0
         i += 1
 
