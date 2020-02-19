@@ -15,10 +15,10 @@ See the License for the specific language governing permissions and limitations 
 
 from BlocksBot.coppeliaSimBinder import Simulation
 from BlocksBot import SimulationRobotBody
+from RedisManager import setBase64FileOnRedis
 
 import cv2
 import base64
-from RedisManager import setBase64FileOnRedis
 
 
 def stepTurnNeckR(simulation, stepAngle=0.5):
@@ -49,9 +49,50 @@ def neckInOOHorizontal(simulation):
     # print("Horizontal 0")
     simulation.setJointTargetPosition("HeadYaw", 0, blocking=False)
 
+def analyzeImage(img, faces):
+    for (x, y, w, h) in faces:
+        cv2.rectangle(img, (x, y), (x + w, y + h), (255, 0, 0), 2)
+    cv2.imshow('img', img)
+    (x, y, w, h) = faces[0]
+    xMax, yMax = img.shape[0:2]
+    middleX = xMax / 2
+    middleY = yMax / 2
+    middlePosX = (w / 2) + x
+    middlePosY = (h / 2) + y
+    # print("New Pos: " + str(x) + " - " + str(y))
+    return {'middleX': middleX, 'middleposX': middlePosX, 'middleY': middleY, 'middlePosY': middlePosY}
+
+
+def behaviour(simulation, points, moveRangeO, moveRangeV):
+    assert isinstance(simulation, Simulation)
+    assert isinstance(points, dict)
+    if points['middlePosX'] > points['middleX'] + moveRangeO:
+        # print("Nao Direction = R")
+        stepTurnNeckR(simulation)
+    elif points['middlePosX'] < points['middleX'] - moveRangeO:
+        # print("Nao Direction = L")
+        stepTurnNeckL(simulation)
+    else:
+        neckInOOHorizontal(simulation)
+    if points['middlePosY'] > points['middleY'] - moveRangeV:
+        # print("Nao Direction = D")
+        stepTurnNeckD(simulation)
+    elif points['middlePosY'] < points['middleY'] + moveRangeV:
+        # print("Nao Direction = U")
+        stepTurnNeckU(simulation)
+    else:
+        neckInOOVerical(simulation)
+
+
+def saveImageOnRedis(img):
+    _, jpg = cv2.imencode('.jpg', img)
+    base64Capture = base64.b64encode(jpg)
+    setBase64FileOnRedis(base64Capture, "capture", "localhost", 0)
+
 
 def main():
     naoFile = "RobotsModels/NAO.json"
+    faceCascadeFile = "CascadeFiles/haarcascade_frontalface_alt_tree.xml"
 
     s = Simulation()
     s.connect()
@@ -64,7 +105,7 @@ def main():
 
     neckInOOVerical(s)
     neckInOOHorizontal(s)
-    faceCascade = cv2.CascadeClassifier('CascadeFiles/haarcascade_frontalface_alt_tree.xml')
+    faceCascade = cv2.CascadeClassifier(faceCascadeFile)
     cap = cv2.VideoCapture(0)
     while True:
         moveRangeO = 100
@@ -74,36 +115,10 @@ def main():
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         faces = faceCascade.detectMultiScale(gray, 1.1, 4)
         cv2.imshow('img', img)
+        saveImageOnRedis(img)
         if len(faces) > 0:
-            _, jpg = cv2.imencode('.jpg', img)
-            base64Capture = base64.b64encode(jpg)
-            setBase64FileOnRedis(base64Capture, "capture", "localhost", 0)
-            for (x, y, w, h) in faces:
-                cv2.rectangle(img, (x, y), (x + w, y + h), (255, 0, 0), 2)
-            cv2.imshow('img', img)
-            (x, y, w, h) = faces[0]
-            xMax, yMax = img.shape[0:2]
-            middleX = xMax / 2
-            middleY = yMax / 2
-            middlePosX = (w / 2) + x
-            middlePosY = (h / 2) + y
-            # print("New Pos: " + str(x) + " - " + str(y))
-            if middlePosX > middleX + moveRangeO:
-                 # print("Nao Direction = R")
-                stepTurnNeckR(s)
-            elif middlePosX < middleX - moveRangeO:
-                # print("Nao Direction = L")
-                stepTurnNeckL(s)
-            else:
-                neckInOOHorizontal(s)
-            if middlePosY > middleY - moveRangeV:
-                # print("Nao Direction = D")
-                stepTurnNeckD(s)
-            elif middlePosY < middleY + moveRangeV:
-                # print("Nao Direction = U")
-                stepTurnNeckU(s)
-            else:
-                neckInOOVerical(s)
+            points = analyzeImage(img, faces)
+            behaviour(s, points, moveRangeO, moveRangeV)
         # Stop if escape key is pressed
         k = cv2.waitKey(30) & 0xff
         if k == 27:
