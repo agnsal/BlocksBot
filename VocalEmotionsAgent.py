@@ -19,9 +19,13 @@ import wave
 import ast
 
 from RedisManager import getStringFromRedis
+import Yamler
+
+RedisConfig = Yamler.getConfigDict("Configs/RedisConfig.yaml")
+
 
 def extractEmotionsFromAudioFile(audio):
-    redisData = getStringFromRedis(audio)
+    redisData = getStringFromRedis(audio, host=RedisConfig['host'], db=RedisConfig['db'])
     emotions = {}
     if redisData:
         print("Reading sound file...")  # Test
