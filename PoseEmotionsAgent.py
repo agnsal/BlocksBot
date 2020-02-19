@@ -14,25 +14,24 @@ See the License for the specific language governing permissions and limitations 
 '''
 
 
-from Configs import API_KEY, API_SECRET
-
 from urllib.request import HTTPError
 import requests
+
 from RedisManager import getBase64FileFromRedis
+import Yamler
+
+PosePPConfig = Yamler.getConfigDict("Configs/FacePlusPlusConfig.yaml")
 
 
 def getBodies(base64Img):
-    httpDetect = 'https://api-us.faceplusplus.com/humanbodypp/v1/skeleton'
-    key = API_KEY
-    secret = API_SECRET
     data = {
-        'api_key': key,
-        'api_secret': secret,
+        'api_key': PosePPConfig['API_KEY'],
+        'api_secret': PosePPConfig['API_SECRET'],
         'image_base64': base64Img,
     }
     try:
         #post data to server
-        resp = requests.post(httpDetect, data)
+        resp = requests.post(PosePPConfig['SKELETON_URL'], data)
         #get response
         faces = resp.json()
         return faces

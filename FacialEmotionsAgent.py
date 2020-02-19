@@ -14,26 +14,25 @@ See the License for the specific language governing permissions and limitations 
 '''
 
 
-from Configs import API_KEY, API_SECRET
-
 from urllib.request import HTTPError
 import requests
+
 from RedisManager import getBase64FileFromRedis
+import Yamler
+
+FacePPConfig = Yamler.getConfigDict("Configs/FacePlusPlusConfig.yaml")
 
 
 def getFacesAndEmotions(base64Img):
-    httpDetect = 'https://api-us.faceplusplus.com/facepp/v3/detect'
-    key = API_KEY
-    secret = API_SECRET
     data = {
-        'api_key': key,
-        'api_secret': secret,
+        'api_key': FacePPConfig['API_KEY'],
+        'api_secret': FacePPConfig['API_SECRET'],
         'image_base64': base64Img,
         'return_attributes': 'emotion',
     }
     try:
         #post data to server
-        resp = requests.post(httpDetect, data)
+        resp = requests.post(FacePPConfig['DETECT_URL'], data)
         #get response
         faces = resp.json()
         return faces
@@ -47,7 +46,7 @@ def main():
         # print(i)  # Test
         if i == 50:
             data = getFacesAndEmotions(getBase64FileFromRedis("capture", "localhost", 0))
-            if data:
+            if data["faces"]:
                 emotions = data["faces"][0]["attributes"]["emotion"]
                 print("EMOTIONS: " + str(emotions))
             i = 0
