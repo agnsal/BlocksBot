@@ -13,9 +13,13 @@ an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express o
 See the License for the specific language governing permissions and limitations under the License
 '''
 
-from RedisManager import setStringOnRedis
-
 import pyaudio
+import time
+
+from RedisManager import hsetOnRedis, publishOnRedis
+import Yamler
+
+RedisConfig = Yamler.getConfigDict("Configs/RedisConfig.yaml")
 
 
 def audioRecordToRedis(set, audioSeconds, format, channels, rate, framesPerBuffer):
@@ -24,6 +28,7 @@ def audioRecordToRedis(set, audioSeconds, format, channels, rate, framesPerBuffe
     assert isinstance(rate, int)
     assert isinstance(framesPerBuffer, int)
     assert isinstance(audioSeconds, int) or isinstance(audioSeconds, float)
+    timestamp = time.time()
     audio = pyaudio.PyAudio()
     stream = audio.open(format=format, channels=channels, rate=rate, input=True, frames_per_buffer=framesPerBuffer)
     print("recording...")  # Test
@@ -35,7 +40,11 @@ def audioRecordToRedis(set, audioSeconds, format, channels, rate, framesPerBuffe
     stream.close()
     audio.terminate()
     params = {'channels': channels, 'sampwidth': audio.get_sample_size(format), 'rate': rate}
-    setStringOnRedis("[" + str(frames) + ", " + str(params) + "]", set)
+    redisStr = "[" + str(frames) + ", " + str(params) + "]"
+    hsetOnRedis(key=RedisConfig['audioHsetRoot']+str(timestamp), field=RedisConfig['audioHsetB64Field'], value=redisStr,
+                host=RedisConfig['host'], port=RedisConfig['port'], db=RedisConfig['db'])
+    publishOnRedis(channel=RedisConfig['newAudioPubSubChannel'], msg=RedisConfig['newAudioMsgRoot']+str(timestamp),
+                   host=RedisConfig['host'], port=RedisConfig['port'], db=RedisConfig['db'])
 
 
 def main():

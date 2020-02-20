@@ -1,2 +1,15 @@
 host: "localhost"
+port: 6379
 db: 0
+
+newImagePubSubChannel: "imageReady"
+newImageMsgRoot: "image"
+
+newAudioPubSubChannel: "audioReady"
+newAudioMsgRoot: "audio"
+
+imageHsetRoot: "image"
+imageHsetB64Field: "b64"
+
+audioHsetRoot: "audio"
+audioHsetB64Field: "b64"

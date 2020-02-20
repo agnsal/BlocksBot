@@ -33,8 +33,10 @@ def subscribeToRedis(channel, host="localhost", port=6379, db=0):
     assert isinstance(port, int)
     assert isinstance(db, int)
     r = redis.StrictRedis(host=host, port=port, db=db)
-    r.pubsub()
-    return r.subscribe(channel)
+    pubSub = r.pubsub()
+    print(type(pubSub))
+    sub = pubSub.subscribe(channel)
+    return sub
 
 
 def deleteFromRedis(key, host="localhost", port=6379, db=0):
@@ -103,5 +105,3 @@ def hgetFromRedis(key, field, host="localhost", port=6379, db=0):
     assert isinstance(db, int)
     r = redis.StrictRedis(host=host, port=port, db=db)
     return r.hget(key, field)
-
-subscribeToRedis("test")
