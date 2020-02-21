@@ -14,8 +14,8 @@ See the License for the specific language governing permissions and limitations 
 '''
 
 import pyaudio
-import time
 
+from TimeManager import getTimestampSec
 from RedisManager import RedisManager
 import Yamler
 
@@ -28,7 +28,7 @@ def audioRecordToRedis(redis, set, audioSeconds, format, channels, rate, framesP
     assert isinstance(rate, int)
     assert isinstance(framesPerBuffer, int)
     assert isinstance(audioSeconds, int) or isinstance(audioSeconds, float)
-    timestamp = time.time()
+    timestamp = getTimestampSec()
     audio = pyaudio.PyAudio()
     stream = audio.open(format=format, channels=channels, rate=rate, input=True, frames_per_buffer=framesPerBuffer)
     print("recording...")  # Test

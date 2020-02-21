@@ -16,6 +16,7 @@ See the License for the specific language governing permissions and limitations 
 
 from urllib.request import HTTPError
 import requests
+import base64
 
 from RedisManager import RedisManager
 import Yamler
@@ -25,6 +26,7 @@ RedisConfig = Yamler.getConfigDict("Configs/RedisConfig.yaml")
 
 
 def getFacesAndEmotions(base64Img):
+    assert isinstance(base64Img, bytes)
     data = {
         'api_key': FacePPConfig['API_KEY'],
         'api_secret': FacePPConfig['API_SECRET'],
@@ -42,19 +44,27 @@ def getFacesAndEmotions(base64Img):
 
 
 def main():
-    i = 0
     r = RedisManager(host=RedisConfig['host'], port=RedisConfig['port'], db=RedisConfig['db'],
                      password=RedisConfig['password'], decodedResponses=RedisConfig['decodedResponses'])
+    sub = r.getRedisPubSub()
+    sub.subscribe(RedisConfig['newImagePubSubChannel'])
     while True:
-        # print(i)  # Test
-        if i == 50:
-            data = getFacesAndEmotions(r.getBase64FileFromRedis("capture"))
-            if data:
-                if data["faces"]:
-                    emotions = data["faces"][0]["attributes"]["emotion"]
-                    print("EMOTIONS: " + str(emotions))
-                i = 0
-        i += 1
+        newMsg = sub.get_message()
+        if newMsg:
+            if newMsg['type'] == 'message':
+                print("New Msg: " + str(newMsg))  # Test
+                imgID = newMsg['data'].decode()
+                img = base64.b64encode(r.hgetFromRedis(key=imgID, field=RedisConfig['imageHsetB64Field']))
+                data = getFacesAndEmotions(img)
+                if data:
+                    print(data)  # Test
+                    if "faces" in data.keys():
+                        emotions = data["faces"][0]["attributes"]["emotion"]
+                        print("EMOTIONS: " + str(emotions))  # test
+                    else:
+                        print("No face detected")  # Test
+                else:
+                    print("No data detected")  # Test
 
 
 if __name__ == '__main__':

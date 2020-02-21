@@ -16,6 +16,7 @@ See the License for the specific language governing permissions and limitations 
 import cv2
 import base64
 
+from TimeManager import getTimestamp
 from BlocksBot.coppeliaSimBinder import Simulation
 from BlocksBot import SimulationRobotBody
 from RedisManager import RedisManager
@@ -88,14 +89,21 @@ def behaviour(simulation, points, moveRangeO, moveRangeV):
 
 
 def saveImageOnRedis(redis, img):
+    timestamp = getTimestamp()
     _, jpg = cv2.imencode('.jpg', img)
     base64Capture = base64.b64encode(jpg)
-    redis.setBase64FileOnRedis(base64Capture, "capture")
+    redis.hsetOnRedis(key=RedisConfig['imageHsetRoot']+str(timestamp), field=RedisConfig['imageHsetB64Field'],
+                      value=base64Capture)
+    redis.publishOnRedis(channel=RedisConfig['newImagePubSubChannel'],
+                         msg=RedisConfig['newImageMsgRoot']+str(timestamp))
 
 
 def main():
     naoFile = "RobotsModels/NAO.json"
     faceCascadeFile = "CascadeFiles/haarcascade_frontalface_alt_tree.xml"
+    deltaFrames = 700
+    moveRangeO = 100
+    moveRangeV = 20
 
     s = Simulation()
     s.connect()
@@ -113,15 +121,18 @@ def main():
 
     r = RedisManager(host=RedisConfig['host'], port=RedisConfig['port'], db=RedisConfig['db'],
                      password=RedisConfig['password'], decodedResponses=RedisConfig['decodedResponses'])
+    i = 0
     while True:
-        moveRangeO = 100
-        moveRangeV = 20
         _, img = cap.read()
         img = cv2.flip(img, 1)
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         faces = faceCascade.detectMultiScale(gray, 1.1, 4)
         cv2.imshow('img', img)
-        saveImageOnRedis(r, img)
+        # print(i)  # Test
+        if i == deltaFrames:
+            print("Save on Redis")  # test
+            saveImageOnRedis(r, img)
+            i = 0
         if len(faces) > 0:
             points = analyzeImage(img, faces)
             behaviour(s, points, moveRangeO, moveRangeV)
@@ -129,6 +140,7 @@ def main():
         k = cv2.waitKey(30) & 0xff
         if k == 27:
             break
+        i += 1
     cap.release()
 
 

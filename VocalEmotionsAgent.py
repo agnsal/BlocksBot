@@ -69,14 +69,12 @@ def main():
                      password=RedisConfig['password'], decodedResponses=RedisConfig['decodedResponses'])
     ps = r.getRedisPubSub()
     ps.subscribe(RedisConfig['newAudioPubSubChannel'])
-    while True:
-        newMsg = ps.get_message()
+    for newMsg in ps.listen():
         print(newMsg)
         print(type(newMsg))
-        if newMsg:
-            audioContent = r.hgetFromRedis(key=newMsg, field=RedisConfig['audioHsetB64Field'])
-            audioEmotions = extractEmotionsFromAudioFile(audioContent)
-            print(audioEmotions)  # Test
+        audioContent = r.hgetFromRedis(key=newMsg, field=RedisConfig['audioHsetB64Field'])
+        audioEmotions = extractEmotionsFromAudioFile(audioContent)
+        print(audioEmotions)  # Test
 
 
 if __name__ == '__main__':

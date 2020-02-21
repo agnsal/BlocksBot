@@ -53,7 +53,7 @@ class RedisManager:
         return self.__decodedResponses
 
     def update(self):
-        self.__redis = redis.StrictRedis(host=self.__host, port=self.__port, db=self.__db, password=self.__password,
+        self.__redis = redis.Redis(host=self.__host, port=self.__port, db=self.__db, password=self.__password,
                                          decode_responses=self.__decodedResponses)
 
     def setHost(self, host):
@@ -84,6 +84,7 @@ class RedisManager:
     def publishOnRedis(self, channel, msg):
         assert isinstance(channel, str)
         assert isinstance(msg, str)
+        print(msg)
         return self.__redis.publish(channel, msg)
 
     def getRedisPubSub(self):
@@ -93,28 +94,19 @@ class RedisManager:
         assert isinstance(key, str)
         return self.__redis.delete(key)
 
-    def setBase64FileOnRedis(self, base64File, key):
-        assert isinstance(base64File, bytes)
+    def setOnRedis(self, key, value):
         assert isinstance(key, str)
-        return self.__redis.set(key, base64File)
+        assert isinstance(value, str) or isinstance(value, bytes)
+        return self.__redis.set(key, value)
 
-    def getBase64FileFromRedis(self, key):
-        assert isinstance(key, str)
-        return self.__redis.get(key)
-
-    def setStringOnRedis(self, stringContent, key):
-        assert isinstance(stringContent, str)
-        assert isinstance(key, str)
-        return self.__redis.set(key, stringContent)
-
-    def getStringFromRedis(self, key):
+    def getFromRedis(self, key):
         assert isinstance(key, str)
         return self.__redis.get(key)
 
     def hsetOnRedis(self, key, field, value):
         assert isinstance(key, str)
         assert isinstance(field, str)
-        assert isinstance(value, str)
+        assert isinstance(value, str) or isinstance(value, bytes)
         return self.__redis.hset(key, field, value)
 
     def hgetFromRedis(self, key, field):
