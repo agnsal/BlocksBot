@@ -1,6 +1,8 @@
 host: "localhost"
 port: 6379
 db: 0
+password: ""
+decodedResponses: True
 
 newImagePubSubChannel: "imageReady"
 newImageMsgRoot: "image"

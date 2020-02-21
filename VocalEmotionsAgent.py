@@ -18,7 +18,7 @@ import Vokaturi
 import wave
 import ast
 
-from RedisManager import subscribeToRedis, hgetFromRedis
+from RedisManager import RedisManager
 import Yamler
 
 RedisConfig = Yamler.getConfigDict("Configs/RedisConfig.yaml")
@@ -64,14 +64,17 @@ def main():
     print("Loading library...")
     Vokaturi.load("lib/open/win/OpenVokaturi-3-3-win64.dll")
     print("Analyzed by: %s" % Vokaturi.versionAndLicense())
+
+    r = RedisManager(host=RedisConfig['host'], port=RedisConfig['port'], db=RedisConfig['db'],
+                     password=RedisConfig['password'], decodedResponses=RedisConfig['decodedResponses'])
+    ps = r.getRedisPubSub()
+    ps.subscribe(RedisConfig['newAudioPubSubChannel'])
     while True:
-        sub = subscribeToRedis(channel=RedisConfig['newAudioPubSubChannel'], host=RedisConfig['host'],
-                               port=RedisConfig['port'], db=RedisConfig['db'])
-        print(type(sub))
-        newMsg = sub.get_message()
+        newMsg = ps.get_message()
+        print(newMsg)
+        print(type(newMsg))
         if newMsg:
-            audioContent = hgetFromRedis(key=newMsg, field=RedisConfig['audioHsetB64Field'], host=RedisConfig['host'],
-                                         port=RedisConfig['port'], db=RedisConfig['db'])
+            audioContent = r.hgetFromRedis(key=newMsg, field=RedisConfig['audioHsetB64Field'])
             audioEmotions = extractEmotionsFromAudioFile(audioContent)
             print(audioEmotions)  # Test
 

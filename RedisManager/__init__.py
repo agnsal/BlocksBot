@@ -16,92 +16,108 @@ See the License for the specific language governing permissions and limitations 
 
 import redis
 
+class RedisManager:
+    __host = None
+    __port = None
+    __db = None
+    __password = None
+    __decodedResponses = None
+    __redis = None
 
-def publishOnRedis(channel, msg, host="localhost", port=6379, db=0):
-    assert isinstance(channel, str)
-    assert isinstance(msg, str)
-    assert isinstance(host, str)
-    assert isinstance(port, int)
-    assert isinstance(db, int)
-    r = redis.StrictRedis(host=host, port=port, db=db)
-    return r.publish(channel, msg)
+    def __init__(self, host="localhost", port=6379, db=0, password='', decodedResponses=True):
+        assert isinstance(host, str)
+        assert isinstance(port, int)
+        assert isinstance(db, int)
+        assert isinstance(password, str)
+        assert isinstance(decodedResponses, bool)
+        self.__host = host
+        self.__port = port
+        self.__db = db
+        self.__password = password
+        self.__decodedResponses = decodedResponses
+        self.update()
 
+    def getHost(self):
+        return self.__host
 
-def subscribeToRedis(channel, host="localhost", port=6379, db=0):
-    assert isinstance(channel, str)
-    assert isinstance(host, str)
-    assert isinstance(port, int)
-    assert isinstance(db, int)
-    r = redis.StrictRedis(host=host, port=port, db=db)
-    pubSub = r.pubsub()
-    print(type(pubSub))
-    sub = pubSub.subscribe(channel)
-    return sub
+    def getPort(self):
+        return self.__port
 
+    def getDB(self):
+        return self.__db
 
-def deleteFromRedis(key, host="localhost", port=6379, db=0):
-    assert isinstance(key, str)
-    assert isinstance(host, str)
-    assert isinstance(port, int)
-    assert isinstance(db, int)
-    r = redis.StrictRedis(host=host, port=port, db=db)
-    return r.delete(key)
+    def getPassword(self):
+        return self.__password
 
+    def getDecodedResponses(self):
+        return self.__decodedResponses
 
-def setBase64FileOnRedis(base64File, key, host="localhost", port=6379, db=0):
-    assert isinstance(base64File, bytes)
-    assert isinstance(key, str)
-    assert isinstance(host, str)
-    assert isinstance(port, int)
-    assert isinstance(db, int)
-    r = redis.StrictRedis(host=host, port=port, db=db)
-    return r.set(key, base64File)
+    def update(self):
+        self.__redis = redis.StrictRedis(host=self.__host, port=self.__port, db=self.__db, password=self.__password,
+                                         decode_responses=self.__decodedResponses)
 
+    def setHost(self, host):
+        assert isinstance(host, str)
+        self.__host = host
+        self.update()
 
-def getBase64FileFromRedis(key, host="localhost", port=6379, db=0):
-    assert isinstance(key, str)
-    assert isinstance(host, str)
-    assert isinstance(port, int)
-    assert isinstance(db, int)
-    r = redis.StrictRedis(host=host, port=port, db=db)
-    return r.get(key)
+    def setPort(self, port):
+        assert isinstance(port, int)
+        self.__port = port
+        self.update()
 
+    def setDB(self, db):
+        assert isinstance(db, int)
+        self.__db = db
+        self.update()
 
-def setStringOnRedis(stringContent, key, host="localhost", port=6379, db=0):
-    assert isinstance(stringContent, str)
-    assert isinstance(key, str)
-    assert isinstance(host, str)
-    assert isinstance(port, int)
-    assert isinstance(db, int)
-    r = redis.StrictRedis(host=host, port=port, db=db)
-    return r.set(key, stringContent)
+    def setPassword(self, password):
+        assert isinstance(password, str)
+        self.__password = password
+        self.update()
 
+    def setDecodedResponses(self, decodedResponses):
+        assert isinstance(decodedResponses, bool)
+        self.__decodedResponses = decodedResponses
+        self.update()
 
-def getStringFromRedis(key, host="localhost", port=6379, db=0, decodedResponses=True):
-    assert isinstance(key, str)
-    assert isinstance(host, str)
-    assert isinstance(port, int)
-    assert isinstance(db, int)
-    r = redis.StrictRedis(host=host, db=db, port=port, decode_responses=decodedResponses)
-    return r.get(key)
+    def publishOnRedis(self, channel, msg):
+        assert isinstance(channel, str)
+        assert isinstance(msg, str)
+        return self.__redis.publish(channel, msg)
 
+    def getRedisPubSub(self):
+        return self.__redis.pubsub()
 
-def hsetOnRedis(key, field, value, host="localhost", port=6379, db=0):
-    assert isinstance(key, str)
-    assert isinstance(field, str)
-    assert isinstance(value, str)
-    assert isinstance(host, str)
-    assert isinstance(port, int)
-    assert isinstance(db, int)
-    r = redis.StrictRedis(host=host, port=port, db=db)
-    return r.hset(key, field, value)
+    def deleteFromRedis(self, key):
+        assert isinstance(key, str)
+        return self.__redis.delete(key)
 
+    def setBase64FileOnRedis(self, base64File, key):
+        assert isinstance(base64File, bytes)
+        assert isinstance(key, str)
+        return self.__redis.set(key, base64File)
 
-def hgetFromRedis(key, field, host="localhost", port=6379, db=0):
-    assert isinstance(key, str)
-    assert isinstance(field, str)
-    assert isinstance(host, str)
-    assert isinstance(port, int)
-    assert isinstance(db, int)
-    r = redis.StrictRedis(host=host, port=port, db=db)
-    return r.hget(key, field)
+    def getBase64FileFromRedis(self, key):
+        assert isinstance(key, str)
+        return self.__redis.get(key)
+
+    def setStringOnRedis(self, stringContent, key):
+        assert isinstance(stringContent, str)
+        assert isinstance(key, str)
+        return self.__redis.set(key, stringContent)
+
+    def getStringFromRedis(self, key):
+        assert isinstance(key, str)
+        return self.__redis.get(key)
+
+    def hsetOnRedis(self, key, field, value):
+        assert isinstance(key, str)
+        assert isinstance(field, str)
+        assert isinstance(value, str)
+        return self.__redis.hset(key, field, value)
+
+    def hgetFromRedis(self, key, field):
+        assert isinstance(key, str)
+        assert isinstance(field, str)
+        return self.__redis.hget(key, field)

@@ -16,13 +16,13 @@ See the License for the specific language governing permissions and limitations 
 import pyaudio
 import time
 
-from RedisManager import hsetOnRedis, publishOnRedis
+from RedisManager import RedisManager
 import Yamler
 
 RedisConfig = Yamler.getConfigDict("Configs/RedisConfig.yaml")
 
 
-def audioRecordToRedis(set, audioSeconds, format, channels, rate, framesPerBuffer):
+def audioRecordToRedis(redis, set, audioSeconds, format, channels, rate, framesPerBuffer):
     assert isinstance(set, str)
     assert isinstance(channels, int)
     assert isinstance(rate, int)
@@ -41,10 +41,10 @@ def audioRecordToRedis(set, audioSeconds, format, channels, rate, framesPerBuffe
     audio.terminate()
     params = {'channels': channels, 'sampwidth': audio.get_sample_size(format), 'rate': rate}
     redisStr = "[" + str(frames) + ", " + str(params) + "]"
-    hsetOnRedis(key=RedisConfig['audioHsetRoot']+str(timestamp), field=RedisConfig['audioHsetB64Field'], value=redisStr,
-                host=RedisConfig['host'], port=RedisConfig['port'], db=RedisConfig['db'])
-    publishOnRedis(channel=RedisConfig['newAudioPubSubChannel'], msg=RedisConfig['newAudioMsgRoot']+str(timestamp),
-                   host=RedisConfig['host'], port=RedisConfig['port'], db=RedisConfig['db'])
+    redis.hsetOnRedis(key=RedisConfig['audioHsetRoot']+str(timestamp), field=RedisConfig['audioHsetB64Field'],
+                      value=redisStr)
+    redis.publishOnRedis(channel=RedisConfig['newAudioPubSubChannel'],
+                         msg=RedisConfig['newAudioMsgRoot']+str(timestamp))
 
 
 def main():
@@ -54,8 +54,10 @@ def main():
     framesPerBuffer = 1024
     audioSeconds = 5
     audio = "test"
+    r = RedisManager(host=RedisConfig['host'], port=RedisConfig['port'], db=RedisConfig['db'],
+                     password=RedisConfig['password'], decodedResponses=RedisConfig['decodedResponses'])
     while True:
-        audioRecordToRedis(audio, audioSeconds, format, channels, rate, framesPerBuffer)
+        audioRecordToRedis(r, audio, audioSeconds, format, channels, rate, framesPerBuffer)
 
 
 if __name__ == '__main__':

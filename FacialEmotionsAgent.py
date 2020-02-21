@@ -17,10 +17,11 @@ See the License for the specific language governing permissions and limitations 
 from urllib.request import HTTPError
 import requests
 
-from RedisManager import getBase64FileFromRedis
+from RedisManager import RedisManager
 import Yamler
 
 FacePPConfig = Yamler.getConfigDict("Configs/FacePlusPlusConfig.yaml")
+RedisConfig = Yamler.getConfigDict("Configs/RedisConfig.yaml")
 
 
 def getFacesAndEmotions(base64Img):
@@ -42,14 +43,17 @@ def getFacesAndEmotions(base64Img):
 
 def main():
     i = 0
+    r = RedisManager(host=RedisConfig['host'], port=RedisConfig['port'], db=RedisConfig['db'],
+                     password=RedisConfig['password'], decodedResponses=RedisConfig['decodedResponses'])
     while True:
         # print(i)  # Test
         if i == 50:
-            data = getFacesAndEmotions(getBase64FileFromRedis("capture", "localhost", 0))
-            if data["faces"]:
-                emotions = data["faces"][0]["attributes"]["emotion"]
-                print("EMOTIONS: " + str(emotions))
-            i = 0
+            data = getFacesAndEmotions(r.getBase64FileFromRedis("capture"))
+            if data:
+                if data["faces"]:
+                    emotions = data["faces"][0]["attributes"]["emotion"]
+                    print("EMOTIONS: " + str(emotions))
+                i = 0
         i += 1
 
 

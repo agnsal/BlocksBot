@@ -13,12 +13,15 @@ an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express o
 See the License for the specific language governing permissions and limitations under the License
 '''
 
-from BlocksBot.coppeliaSimBinder import Simulation
-from BlocksBot import SimulationRobotBody
-from RedisManager import setBase64FileOnRedis
-
 import cv2
 import base64
+
+from BlocksBot.coppeliaSimBinder import Simulation
+from BlocksBot import SimulationRobotBody
+from RedisManager import RedisManager
+import Yamler
+
+RedisConfig = Yamler.getConfigDict("Configs/RedisConfig.yaml")
 
 
 def stepTurnNeckR(simulation, stepAngle=0.5):
@@ -84,10 +87,10 @@ def behaviour(simulation, points, moveRangeO, moveRangeV):
         neckInOOVerical(simulation)
 
 
-def saveImageOnRedis(img):
+def saveImageOnRedis(redis, img):
     _, jpg = cv2.imencode('.jpg', img)
     base64Capture = base64.b64encode(jpg)
-    setBase64FileOnRedis(base64Capture, "capture", "localhost", 0)
+    redis.setBase64FileOnRedis(base64Capture, "capture")
 
 
 def main():
@@ -107,6 +110,9 @@ def main():
     neckInOOHorizontal(s)
     faceCascade = cv2.CascadeClassifier(faceCascadeFile)
     cap = cv2.VideoCapture(0)
+
+    r = RedisManager(host=RedisConfig['host'], port=RedisConfig['port'], db=RedisConfig['db'],
+                     password=RedisConfig['password'], decodedResponses=RedisConfig['decodedResponses'])
     while True:
         moveRangeO = 100
         moveRangeV = 20
@@ -115,7 +121,7 @@ def main():
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         faces = faceCascade.detectMultiScale(gray, 1.1, 4)
         cv2.imshow('img', img)
-        saveImageOnRedis(img)
+        saveImageOnRedis(r, img)
         if len(faces) > 0:
             points = analyzeImage(img, faces)
             behaviour(s, points, moveRangeO, moveRangeV)
