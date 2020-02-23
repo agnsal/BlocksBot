@@ -73,13 +73,15 @@ def main():
                 print("New Msg: " + str(newMsg))  # Test
                 imgID = newMsg['data'].decode()
                 img = r.hgetFromRedis(key=imgID, field=RedisConfig['imageHsetB64Field'])
-                if not isinstance(img, bytes):
-                    img = base64.b64encode(img)
-                data = getBodies(img)
-                bodies = data['skeletons']
-                for elem in bodies:
-                    detectedAttitudes.append(getAttitude(elem, errorThreshold))
-            print("Detected Attitudes: " + str(detectedAttitudes))  # Test
+                if img:
+                    if not isinstance(img, bytes):
+                        img = base64.b64encode(img)
+                    data = getBodies(img)
+                    bodies = data['skeletons']
+                    for elem in bodies:
+                        detectedAttitudes.append(getAttitude(elem, errorThreshold))
+                    r.hsetOnRedis(key=imgID, field=RedisConfig['imageHsetPoseResultField'], value=str(detectedAttitudes))
+                    print("Detected Attitudes: " + str(detectedAttitudes))  # Test
 
 
 if __name__ == '__main__':

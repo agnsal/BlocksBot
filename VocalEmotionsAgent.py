@@ -75,10 +75,12 @@ def main():
                 print("New Msg: " + str(newMsg))  # Test
                 audioID = newMsg['data'].decode()
                 audioContent = r.hgetFromRedis(key=audioID, field=RedisConfig['audioHsetB64Field'])
-                if isinstance(audioContent, bytes):
-                    audioContent = audioContent.decode()
-                audioEmotions = extractEmotionsFromAudioFile(audioContent)
-                print(audioEmotions)  # Test
+                if audioContent:
+                    if isinstance(audioContent, bytes):
+                        audioContent = audioContent.decode()
+                    audioEmotions = extractEmotionsFromAudioFile(audioContent)
+                    print(audioEmotions)  # Test
+                    r.hsetOnRedis(key=audioID, field=RedisConfig['audioHsetVocalResultField'], value=str(audioEmotions))
 
 
 if __name__ == '__main__':
