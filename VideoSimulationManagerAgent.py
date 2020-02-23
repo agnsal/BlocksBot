@@ -30,28 +30,49 @@ def stepTurnNeckR(simulation, stepAngle=0.5):
     simulation.setJointTargetPosition("HeadYaw", stepAngle, blocking=False)
     # print(simulation.getJointPosition("HeadYaw"))
 
+
 def stepTurnNeckL(simulation, stepAngle=0.5):
     # print(simulation.getJointPosition("HeadYaw"))
     simulation.setJointTargetPosition("HeadYaw", -stepAngle, blocking=False)
     # print(simulation.getJointPosition("HeadYaw"))
+
 
 def stepTurnNeckU(simulation, stepAngle=0.5):
     # print(simulation.getJointPosition("HeadPitch"))
     simulation.setJointTargetPosition("HeadPitch", -stepAngle, blocking=False)
     # print(simulation.getJointPosition("HeadPitch"))
 
+
 def stepTurnNeckD(simulation, stepAngle=0.5):
     # print(simulation.getJointPosition("HeadPitch"))
     simulation.setJointTargetPosition("HeadPitch", stepAngle, blocking=False)
     #print(simulation.getJointPosition("HeadPitch"))
 
+
 def neckInOOVerical(simulation):
     # print("Verical 0")
     simulation.setJointTargetPosition("HeadPitch", 0, blocking=False)
 
+
 def neckInOOHorizontal(simulation):
     # print("Horizontal 0")
     simulation.setJointTargetPosition("HeadYaw", 0, blocking=False)
+
+
+def RArmInOO(simulation):
+    simulation.setJointTargetPosition("RShoulderPitch3", 1.4, blocking=False)
+
+
+def LArmInOO(simulation):
+    simulation.setJointTargetPosition("LShoulderPitch3", 1.4, blocking=False)
+
+
+def initialPose(simulation):
+    neckInOOVerical(simulation)
+    neckInOOHorizontal(simulation)
+    RArmInOO(simulation)
+    LArmInOO(simulation)
+
 
 def analyzeImage(img, faces):
     for (x, y, w, h) in faces:
@@ -112,9 +133,8 @@ def main():
     simNao.printComponents()
     s.setSimRobotsComponetsStateAndHandles()
     simNao.printComponents()
+    initialPose(s)
 
-    neckInOOVerical(s)
-    neckInOOHorizontal(s)
     faceCascade = cv2.CascadeClassifier(faceCascadeFile)
     cap = cv2.VideoCapture(0)
 
