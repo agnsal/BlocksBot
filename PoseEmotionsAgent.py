@@ -16,25 +16,30 @@ See the License for the specific language governing permissions and limitations 
 
 from urllib.request import HTTPError
 import requests
+import base64
 
-from RedisManager import getBase64FileFromRedis
+from RedisManager import RedisManager
 import Yamler
 
-PosePPConfig = Yamler.getConfigDict("Configs/FacePlusPlusConfig.yaml")
+FacePPConfig = Yamler.getConfigDict("Configs/FacePlusPlusConfig.yaml")
+RedisConfig = Yamler.getConfigDict("Configs/RedisConfig.yaml")
 
 
 def getBodies(base64Img):
+    key = FacePPConfig['API_KEY']
+    secret = FacePPConfig['API_SECRET']
+    httpSkeleton = FacePPConfig['SKELETON_URL']
     data = {
-        'api_key': PosePPConfig['API_KEY'],
-        'api_secret': PosePPConfig['API_SECRET'],
+        'api_key': key,
+        'api_secret': secret,
         'image_base64': base64Img,
     }
     try:
         #post data to server
-        resp = requests.post(PosePPConfig['SKELETON_URL'], data)
+        resp = requests.post(httpSkeleton, data)
         #get response
-        faces = resp.json()
-        return faces
+        bodies = resp.json()
+        return bodies
     except HTTPError as e:
         print(e.read())
 
@@ -49,20 +54,35 @@ def getAttitude(body):
 
 
 def main():
-    i = 0
+    r = RedisManager(host=RedisConfig['host'], port=RedisConfig['port'], db=RedisConfig['db'],
+                     password=RedisConfig['password'], decodedResponses=RedisConfig['decodedResponses'])
+    sub = r.getRedisPubSub()
+    sub.subscribe(RedisConfig['newImagePubSubChannel'])
     while True:
-        # print(i)  # Test
-        if i == 50:
-            data = getBodies(getBase64FileFromRedis("capture", "localhost", 0))
-            print(data)  # Test
-            if data:
+        newMsg = sub.get_message()
+        detectedAttitudes = []
+        if newMsg:
+            if newMsg['type'] == 'message':
+                print("New Msg: " + str(newMsg))  # Test
+                imgID = newMsg['data'].decode()
+                img = r.hgetFromRedis(key=imgID, field=RedisConfig['imageHsetB64Field'])
+                if not isinstance(img, bytes):
+                    img = base64.b64encode(img)
+                data = getBodies(img)
                 bodies = data['skeletons']
-                for b in bodies:
-                    print(b)  # Test
-                    attitude = getAttitude(b)
-                    print(attitude)  # Test
-            i = 0
-        i += 1
+                for elem in bodies:
+                    detectedAttitudes.append(getAttitude(elem))
+            print("Detected Attitudes: " + str(detectedAttitudes))
+        '''
+        print(data)  # Test
+        if data:
+            bodies = data['skeletons']
+            for b in bodies:
+                print(b)  # Test
+                attitude = getAttitude(b)
+                print(attitude)  # Test
+        '''
+
 
 
 if __name__ == '__main__':

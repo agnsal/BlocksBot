@@ -27,15 +27,18 @@ RedisConfig = Yamler.getConfigDict("Configs/RedisConfig.yaml")
 
 def getFacesAndEmotions(base64Img):
     assert isinstance(base64Img, bytes)
+    key = FacePPConfig['API_KEY']
+    secret = FacePPConfig['API_SECRET']
+    httpDetect = FacePPConfig['DETECT_URL']
     data = {
-        'api_key': FacePPConfig['API_KEY'],
-        'api_secret': FacePPConfig['API_SECRET'],
+        'api_key': key,
+        'api_secret': secret,
         'image_base64': base64Img,
         'return_attributes': 'emotion',
     }
     try:
         #post data to server
-        resp = requests.post(FacePPConfig['DETECT_URL'], data)
+        resp = requests.post(httpDetect, data)
         #get response
         faces = resp.json()
         return faces
@@ -50,17 +53,22 @@ def main():
     sub.subscribe(RedisConfig['newImagePubSubChannel'])
     while True:
         newMsg = sub.get_message()
+        detectedEmotions = []
         if newMsg:
             if newMsg['type'] == 'message':
                 print("New Msg: " + str(newMsg))  # Test
                 imgID = newMsg['data'].decode()
-                img = base64.b64encode(r.hgetFromRedis(key=imgID, field=RedisConfig['imageHsetB64Field']))
+                img = r.hgetFromRedis(key=imgID, field=RedisConfig['imageHsetB64Field'])
+                if not isinstance(img, bytes):
+                    img = base64.b64encode(img)
                 data = getFacesAndEmotions(img)
                 if data:
                     print(data)  # Test
                     if "faces" in data.keys():
-                        emotions = data["faces"][0]["attributes"]["emotion"]
-                        print("EMOTIONS: " + str(emotions))  # test
+                        faces = data['faces']
+                        for elem in faces:
+                            detectedEmotions.append(elem['attributes']['emotion'])
+                        print("Detected emotions: " + str(detectedEmotions))  # Test
                     else:
                         print("No face detected")  # Test
                 else:

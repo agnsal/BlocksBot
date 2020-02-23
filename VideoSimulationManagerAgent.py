@@ -63,8 +63,7 @@ def analyzeImage(img, faces):
     middleY = yMax / 2
     middlePosX = (w / 2) + x
     middlePosY = (h / 2) + y
-    # print("New Pos: " + str(x) + " - " + str(y))
-    return {'middleX': middleX, 'middleposX': middlePosX, 'middleY': middleY, 'middlePosY': middlePosY}
+    return {'middleX': middleX, 'middlePosX': middlePosX, 'middleY': middleY, 'middlePosY': middlePosY}
 
 
 def behaviour(simulation, points, moveRangeO, moveRangeV):
@@ -101,7 +100,7 @@ def saveImageOnRedis(redis, img):
 def main():
     naoFile = "RobotsModels/NAO.json"
     faceCascadeFile = "CascadeFiles/haarcascade_frontalface_alt_tree.xml"
-    deltaFrames = 700
+    deltaFrames = 50
     moveRangeO = 100
     moveRangeV = 20
 
