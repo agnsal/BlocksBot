@@ -64,17 +64,21 @@ def main():
     print("Loading library...")
     Vokaturi.load("lib/open/win/OpenVokaturi-3-3-win64.dll")
     print("Analyzed by: %s" % Vokaturi.versionAndLicense())
-
     r = RedisManager(host=RedisConfig['host'], port=RedisConfig['port'], db=RedisConfig['db'],
                      password=RedisConfig['password'], decodedResponses=RedisConfig['decodedResponses'])
-    ps = r.getRedisPubSub()
-    ps.subscribe(RedisConfig['newAudioPubSubChannel'])
-    for newMsg in ps.listen():
-        print(newMsg)
-        print(type(newMsg))
-        audioContent = r.hgetFromRedis(key=newMsg, field=RedisConfig['audioHsetB64Field'])
-        audioEmotions = extractEmotionsFromAudioFile(audioContent)
-        print(audioEmotions)  # Test
+    sub = r.getRedisPubSub()
+    sub.subscribe(RedisConfig['newAudioPubSubChannel'])
+    while True:
+        newMsg = sub.get_message()
+        if newMsg:
+            if newMsg['type'] == 'message':
+                print("New Msg: " + str(newMsg))  # Test
+                audioID = newMsg['data'].decode()
+                audioContent = r.hgetFromRedis(key=audioID, field=RedisConfig['audioHsetB64Field'])
+                if isinstance(audioContent, bytes):
+                    audioContent = audioContent.decode()
+                audioEmotions = extractEmotionsFromAudioFile(audioContent)
+                print(audioEmotions)  # Test
 
 
 if __name__ == '__main__':

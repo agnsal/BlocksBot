@@ -45,6 +45,8 @@ def getBodies(base64Img):
 
 
 def getAttitude(body):
+    print(body)
+    #ToDo: probabilities
     RHandX = body['landmark']['right_hand']['x']
     RShoulderX = body['landmark']['right_shoulder']['x']
     LHandX = body['landmark']['left_hand']['x']
@@ -72,17 +74,7 @@ def main():
                 bodies = data['skeletons']
                 for elem in bodies:
                     detectedAttitudes.append(getAttitude(elem))
-            print("Detected Attitudes: " + str(detectedAttitudes))
-        '''
-        print(data)  # Test
-        if data:
-            bodies = data['skeletons']
-            for b in bodies:
-                print(b)  # Test
-                attitude = getAttitude(b)
-                print(attitude)  # Test
-        '''
-
+            print("Detected Attitudes: " + str(detectedAttitudes))  # Test
 
 
 if __name__ == '__main__':
