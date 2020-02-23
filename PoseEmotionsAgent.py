@@ -44,18 +44,23 @@ def getBodies(base64Img):
         print(e.read())
 
 
-def getAttitude(body):
-    print(body)
-    #ToDo: probabilities
-    RHandX = body['landmark']['right_hand']['x']
-    RShoulderX = body['landmark']['right_shoulder']['x']
-    LHandX = body['landmark']['left_hand']['x']
-    LShoulderX = body['landmark']['left_shoulder']['x']
-    bodyWidth = body['body_rectangle']['width']
-    return (abs(int(RHandX) - int(RShoulderX)) + abs(int(LHandX) - int(LShoulderX))) / int(bodyWidth)
+def getAttitude(body, errorThreshold):
+    attitude = None
+    print(body['landmark']['right_hand']['score'])
+    if (body['landmark']['right_hand']['score'] > errorThreshold and body['landmark']['right_shoulder']['score'] > errorThreshold
+            and body['landmark']['left_hand']['score'] > errorThreshold and
+            body['landmark']['left_shoulder']['score'] > errorThreshold):
+        RHandX = body['landmark']['right_hand']['x']
+        RShoulderX = body['landmark']['right_shoulder']['x']
+        LHandX = body['landmark']['left_hand']['x']
+        LShoulderX = body['landmark']['left_shoulder']['x']
+        bodyWidth = body['body_rectangle']['width']
+        attitude = ((int(RHandX) - int(RShoulderX)) + (int(LShoulderX) - int(LHandX))) / int(bodyWidth)
+    return attitude
 
 
 def main():
+    errorThreshold = 0.50
     r = RedisManager(host=RedisConfig['host'], port=RedisConfig['port'], db=RedisConfig['db'],
                      password=RedisConfig['password'], decodedResponses=RedisConfig['decodedResponses'])
     sub = r.getRedisPubSub()
@@ -73,7 +78,7 @@ def main():
                 data = getBodies(img)
                 bodies = data['skeletons']
                 for elem in bodies:
-                    detectedAttitudes.append(getAttitude(elem))
+                    detectedAttitudes.append(getAttitude(elem, errorThreshold))
             print("Detected Attitudes: " + str(detectedAttitudes))  # Test
 
 
