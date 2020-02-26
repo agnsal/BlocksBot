@@ -52,7 +52,7 @@ def extractEmotionsFromAudioFile(audioContent):
     voice.extract(quality, emotionProbabilities)
     if quality.valid:
         emotions["neutral"] = emotionProbabilities.neutrality
-        emotions["happy"] = emotionProbabilities.happiness
+        emotions["happiness"] = emotionProbabilities.happiness
         emotions["sad"] = emotionProbabilities.sadness
         emotions["angry"] = emotionProbabilities.anger
         emotions["fear"] = emotionProbabilities.fear
