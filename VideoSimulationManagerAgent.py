@@ -84,6 +84,7 @@ def analyzeImage(img, faces):
     middleY = yMax / 2
     middlePosX = (w / 2) + x
     middlePosY = (h / 2) + y
+    #cv2.rectangle(img, (int(middlePosX), int(middlePosY)), (int(middlePosX) + 20, int(middlePosY) + 20), (0, 255, 0), 2)
     return {'middleX': middleX, 'middlePosX': middlePosX, 'middleY': middleY, 'middlePosY': middlePosY}
 
 

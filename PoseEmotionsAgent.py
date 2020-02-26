@@ -46,16 +46,12 @@ def getBodies(base64Img):
 
 def getAttitude(body, errorThreshold):
     attitude = None
-    print(body['landmark']['right_hand']['score'])
-    if (body['landmark']['right_hand']['score'] > errorThreshold and body['landmark']['right_shoulder']['score'] > errorThreshold
-            and body['landmark']['left_hand']['score'] > errorThreshold and
-            body['landmark']['left_shoulder']['score'] > errorThreshold):
+    if (body['landmark']['right_hand']['score'] > errorThreshold and
+            body['landmark']['left_hand']['score'] > errorThreshold):
         RHandX = body['landmark']['right_hand']['x']
-        RShoulderX = body['landmark']['right_shoulder']['x']
         LHandX = body['landmark']['left_hand']['x']
-        LShoulderX = body['landmark']['left_shoulder']['x']
         bodyWidth = body['body_rectangle']['width']
-        attitude = ((int(RHandX) - int(RShoulderX)) + (int(LShoulderX) - int(LHandX))) / int(bodyWidth)
+        attitude = abs(RHandX - LHandX) / bodyWidth
     return attitude
 
 
