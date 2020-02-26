@@ -18,3 +18,7 @@ imageHsetPoseResultField: "PEA"
 audioHsetRoot: "audio"
 audioHsetB64Field: "b64"
 audioHsetVocalResultField: "VEA"
+
+FacialQueue: "FEAQueue"
+PoseQueue: "PEAQueue"
+VocalChannel: "VEAReady"

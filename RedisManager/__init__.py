@@ -113,3 +113,22 @@ class RedisManager:
         assert isinstance(key, str)
         assert isinstance(field, str)
         return self.__redis.hget(key, field)
+
+    def rPushToRedisQueue(self, queue, item):
+        assert isinstance(queue, str)
+        assert isinstance(item, str) or isinstance(item, bytes)
+        return self.__redis.rpush(queue, item)
+
+    def lPushToRedisQueue(self, queue, item):
+        assert isinstance(queue, str)
+        assert isinstance(item, str) or isinstance(item, bytes)
+        return self.__redis.lpush(queue, item)
+
+    def rPopFromRedisQueue(self, queue):
+        assert isinstance(queue, str)
+        return self.__redis.rpop(queue)
+
+    def lPopFromRedisQueue(self, queue):
+        assert isinstance(queue, str)
+        return self.__redis.lpop(queue)
+

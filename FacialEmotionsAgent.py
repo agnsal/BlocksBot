@@ -70,6 +70,7 @@ def main():
                             for elem in faces:
                                 detectedEmotions.append(elem['attributes']['emotion'])
                             print("Detected emotions: " + str(detectedEmotions))  # Test
+                            r.rPushToRedisQueue(queue=RedisConfig['FacialQueue'], item=str(detectedEmotions))
                             r.hsetOnRedis(key=imgID, field=RedisConfig['imageHsetFacialResultField'],
                                           value=str(detectedEmotions))
                         else:

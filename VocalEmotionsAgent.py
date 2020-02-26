@@ -80,6 +80,7 @@ def main():
                         audioContent = audioContent.decode()
                     audioEmotions = extractEmotionsFromAudioFile(audioContent)
                     print(audioEmotions)  # Test
+                    r.publishOnRedis(channel=RedisConfig['VocalChannel'], msg=str(audioEmotions))
                     r.hsetOnRedis(key=audioID, field=RedisConfig['audioHsetVocalResultField'], value=str(audioEmotions))
 
 

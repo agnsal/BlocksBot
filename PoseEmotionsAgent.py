@@ -76,6 +76,7 @@ def main():
                     bodies = data['skeletons']
                     for elem in bodies:
                         detectedAttitudes.append(getAttitude(elem, errorThreshold))
+                    r.rPushToRedisQueue(queue=RedisConfig['PoseQueue'], item=str(detectedAttitudes))
                     r.hsetOnRedis(key=imgID, field=RedisConfig['imageHsetPoseResultField'], value=str(detectedAttitudes))
                     print("Detected Attitudes: " + str(detectedAttitudes))  # Test
 
