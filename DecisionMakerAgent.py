@@ -26,14 +26,13 @@ def getAverageResultFromRedisQueue(redis, queue, queueRange):
     assert isinstance(queueRange, int)
     avg = {}
     resList = []
-    for i in range(0, queueRange + 1):
-        elem = redis.rPopFromRedisQueue(queue)
+    print(queue + ": " + str(redis.getRedisQueueLen(queue)))
+    while redis.getRedisQueueLen(queue) > 0:
+        elem = redis.lPopFromRedisQueue(queue)
         if isinstance(elem, bytes):
             elem = elem.decode()
-        if elem:
-            resList.append(ast.literal_eval(elem)[0])
+        resList.append(ast.literal_eval(elem)[0])
     print(resList)  # Test
-    redis.deleteFromRedis(key=RedisConfig['FacialQueue'])
     happinessSum = 0
     neutralSum = 0
     sadnessSum = 0
@@ -54,12 +53,12 @@ def getAverageResultFromRedisQueue(redis, queue, queueRange):
 
 def facialVocalCompare(facialRes, vocalRes, facialW=2, vocalW=1):
     assert isinstance(facialRes, dict)
+    assert isinstance(vocalRes, dict)
     assert isinstance(facialW, int) or isinstance(facialW, float)
     assert isinstance(vocalW, int) or isinstance(vocalW, float)
     res = {}
     tot = facialW + vocalW
-    for emo in ['happiness', 'neutral', 'sadness', 'fear', 'disgust']:
-        print(facialRes[emo])
+    for emo in ['happiness', 'neutral', 'sadness', 'fear', 'angry']:
         res[emo] = (facialRes[emo] * facialW + vocalRes[emo] * vocalW) / tot
     return res
 
@@ -75,7 +74,7 @@ def main():
         if newMsg:
             if newMsg['type'] == 'message':
                 print("Vocal Result: " + str(newMsg))  # Test
-                vocalRes = newMsg['data'].decode()
+                vocalRes = ast.literal_eval(newMsg['data'].decode())
                 facialRes = getAverageResultFromRedisQueue(r, RedisConfig['FacialQueue'], queueRange)
                 facialVocal = facialVocalCompare(facialRes, vocalRes)
                 print(facialVocal)

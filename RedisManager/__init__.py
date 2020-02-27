@@ -132,3 +132,7 @@ class RedisManager:
         assert isinstance(queue, str)
         return self.__redis.lpop(queue)
 
+    def getRedisQueueLen(self, queue):
+        assert isinstance(queue, str)
+        return self.__redis.llen(queue)
+
