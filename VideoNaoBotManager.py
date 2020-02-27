@@ -17,12 +17,14 @@ from naoqi import ALProxy
 import vision_definitions
 
 from RedisManager import RedisManager
+from TimeManager import getTimestamp
 import Yamler
 
-RedisConfig = Yamler.getConfigDict("Configs/RedisConfig.yaml")
+RedisConfig = Yamler.getConfigDict("Configs/RedisConfigNao.yaml")
 
 import sys
 import time
+import cv2
 
 from naoqi import ALProxy
 from naoqi import ALBroker
@@ -30,13 +32,49 @@ from naoqi import ALModule
 
 from optparse import OptionParser
 
-NAO_IP = "127.0.0.1"
-NAO_PORT = 64187
+NAO_IP = "192.168.0.100"
+NAO_PORT = 9559
+resolution = vision_definitions.kQVGA
+colorSpace = vision_definitions.kYUVColorSpace
+fps = 15
+
+
+def initCamProxy(proxyName, IP, PORT):
+    assert isinstance(proxyName, str)
+    assert isinstance(IP, str)
+    assert isinstance(PORT, int)
+    return ALProxy(proxyName, IP, PORT)
+
+
+def camProxySubscribe(camProxy, channel, resolution, colorSpace, fps):
+    assert isinstance(channel, str)
+    assert isinstance(resolution, int)
+    assert isinstance(colorSpace, int)
+    assert isinstance(fps, int)
+    return camProxy.subscribe(channel, resolution, colorSpace, fps)
+
+
+def camProxyUnsubscribe(camProxy, camProxySub):
+    return camProxy.unsubscribe(camProxySub)
+
+
+def saveImageOnRedis(redis, img):
+    timestamp = getTimestamp()
+    _, jpg = cv2.imencode('.jpg', img)
+    base64Capture = base64.b64encode(jpg)
+    redis.hsetOnRedis(key=RedisConfig['imageHsetRoot']+str(timestamp), field=RedisConfig['imageHsetB64Field'],
+                      value=base64Capture)
+    redis.publishOnRedis(channel=RedisConfig['newImagePubSubChannel'],
+                         msg=RedisConfig['newImageMsgRoot']+str(timestamp))
 
 
 # Global variable to store the HumanGreeter module instance
 HumanGreeter = None
 memory = None
+camProxy = initCamProxy("ALVideoDevice", NAO_IP, NAO_PORT)
+camSub = camProxySubscribe(camProxy, "ALVideoDevice", resolution, colorSpace, fps)
+r = RedisManager(host=RedisConfig['host'], port=RedisConfig['port'], db=RedisConfig['db'],
+                     password=RedisConfig['password'], decodedResponses=RedisConfig['decodedResponses'])
 
 
 class HumanGreeterModule(ALModule):
@@ -70,6 +108,9 @@ class HumanGreeterModule(ALModule):
             "HumanGreeter")
 
         self.tts.say("Hello, you")
+        naoImage = camProxy.getImageRemote(camSub)
+
+        saveImageOnRedis(r, naoImage[6])
 
         # Subscribe again to the event
         memory.subscribeToEvent("FaceDetected",
@@ -78,42 +119,6 @@ class HumanGreeterModule(ALModule):
 
 
 def main():
-    ####
-    # Create proxy on ALVideoDevice
-
-    print "Creating ALVideoDevice proxy to ", NAO_IP
-
-    camProxy = ALProxy("ALVideoDevice", NAO_IP, NAO_PORT)
-
-    ####
-    # Register a Generic Video Module
-
-    resolution = vision_definitions.kQVGA
-    colorSpace = vision_definitions.kYUVColorSpace
-    fps = 30
-
-    nameId = camProxy.subscribe("python_GVM", resolution, colorSpace, fps)
-    print nameId
-
-    '''
-    print 'getting images in local'
-    for i in range(0, 20):
-      camProxy.getImageLocal(nameId)
-      camProxy.releaseImage(nameId)
-
-    resolution = vision_definitions.kQQVGA
-    camProxy.setResolution(nameId, resolution)
-    '''
-
-    print 'getting images in remote'
-    for i in range(0, 20):
-      camProxy.getImageRemote(nameId)
-
-    camProxy.unsubscribe(nameId)
-
-    print 'end of gvm_getImageLocal python script'
-
-
     parser = OptionParser()
     parser.add_option("--pip",
         help="Parent broker port. The IP address or your robot",
@@ -150,11 +155,47 @@ def main():
         while True:
             time.sleep(1)
     except KeyboardInterrupt:
-        print
         print "Interrupted by user, shutting down"
         myBroker.shutdown()
         sys.exit(0)
 
 
-if __name__ == "__main__":
-    main()
+
+
+'''
+def getNaoImage(IP, PORT, resolution, colorSpace):
+      camProxy = ALProxy("ALVideoDevice", IP, PORT)
+      resolution = 2    # VGA
+      colorSpace = 11   # RGB
+      videoClient = camProxy.subscribe("python_client", resolution, colorSpace, 5)
+      t0 = time.time()
+
+      # Get a camera image.
+      # image[6] contains the image data passed as an array of ASCII chars.
+      naoImage = camProxy.getImageRemote(videoClient)
+
+      t1 = time.time()
+
+      # Time the image transfer.
+      print "acquisition delay ", t1 - t0
+
+      camProxy.unsubscribe(videoClient)
+
+
+  # Now we work with the image returned and save it as a PNG  using ImageDraw
+  # package.
+
+  # Get the image size and pixel array.
+  imageWidth = naoImage[0]
+  imageHeight = naoImage[1]
+  array = naoImage[6]
+
+  # Create a PIL Image from our pixel array.
+  im = Image.fromstring("RGB", (imageWidth, imageHeight), array)
+
+  # Save the image.
+  im.save("camImage.png", "PNG")
+
+  #im.show()
+  
+'''
