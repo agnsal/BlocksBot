@@ -18,7 +18,7 @@ import vision_definitions
 
 from RedisManager import RedisManager
 from TimeManager import getTimestamp
-from Configs import RedisConfig
+from Configs import RedisConfig, NaoConfig
 
 import time
 from PIL import Image
@@ -26,13 +26,6 @@ import base64
 import cStringIO
 
 from naoqi import ALProxy
-
-
-NAO_IP = "192.168.0.100"
-NAO_PORT = 9559
-resolution = vision_definitions.kQVGA
-colorSpace = vision_definitions.kYUVColorSpace
-fps = 15
 
 
 def saveImageOnRedis(redis, base64Capture):
@@ -43,8 +36,10 @@ def saveImageOnRedis(redis, base64Capture):
                          msg=RedisConfig['newImageMsgRoot']+str(timestamp))
 
 def main():
-    camProxy = ALProxy("ALVideoDevice", NAO_IP, NAO_PORT)
-    camSub = camProxy.subscribe("python_client", resolution, colorSpace, fps)
+    resolution = vision_definitions.kQVGA
+    colorSpace = vision_definitions.kYUVColorSpace
+    camProxy = ALProxy("ALVideoDevice", NaoConfig['IP'], NaoConfig['PORT'])
+    camSub = camProxy.subscribe("python_client", resolution, colorSpace, NaoConfig['imageFPS'])
     r = RedisManager(host=RedisConfig['host'], port=RedisConfig['port'], db=RedisConfig['db'],
                      password=RedisConfig['password'], decodedResponses=RedisConfig['decodedResponses'])
     while True:

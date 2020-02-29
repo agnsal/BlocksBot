@@ -22,8 +22,7 @@ import Yamler
 RedisConfig = Yamler.getConfigDict("Configs/RedisConfig.yaml")
 
 
-def audioRecordToRedis(redis, set, audioSeconds, format, channels, rate, framesPerBuffer):
-    assert isinstance(set, str)
+def audioRecordToRedis(redis, audioSeconds, format, channels, rate, framesPerBuffer):
     assert isinstance(channels, int)
     assert isinstance(rate, int)
     assert isinstance(framesPerBuffer, int)
@@ -53,11 +52,10 @@ def main():
     rate = 44100
     framesPerBuffer = 1024
     audioSeconds = 5
-    audio = "test"
     r = RedisManager(host=RedisConfig['host'], port=RedisConfig['port'], db=RedisConfig['db'],
                      password=RedisConfig['password'], decodedResponses=RedisConfig['decodedResponses'])
     while True:
-        audioRecordToRedis(r, audio, audioSeconds, format, channels, rate, framesPerBuffer)
+        audioRecordToRedis(r, audioSeconds, format, channels, rate, framesPerBuffer)
 
 
 if __name__ == '__main__':
