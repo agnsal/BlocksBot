@@ -92,11 +92,18 @@ def main():
                                                            emotions=DMAConfig['emotions'])
                 facialVocal = facialVocalCompare(facialRes, vocalRes, emotions=DMAConfig['emotions'])
                 print(facialVocal)  # Test
-                sortedEmotions = {k: v for k, v in sorted(facialVocal.items(), key=lambda item: item[1])}
-                print(sortedEmotions)  # Test
-                sortedEmoList = list(sortedEmotions.items())
-                topEmotions = dict([sortedEmoList[-1], sortedEmoList[-2]])
-                print(topEmotions)
+                if facialVocal:
+                    sortedEmotions = {k: v for k, v in sorted(facialVocal.items(), key=lambda item: item[1])}
+                    print(sortedEmotions)  # Test
+                    sortedEmoList = list(sortedEmotions.items())
+                    topEmotions = dict([sortedEmoList[-1], sortedEmoList[-2]])
+                    print(topEmotions)
+                    diff = 0
+                    for k in topEmotions:
+                        diff -= topEmotions[k]
+                    diff = abs(diff)
+                    if diff <= DMAConfig['poseTestThreshold']:
+                        print(diff)  # Test
 
 
 

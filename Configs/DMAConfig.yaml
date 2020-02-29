@@ -4,3 +4,5 @@ emotions:
   - 'sadness'
   - 'fear'
   - 'angry'
+
+poseTestThreshold: 0.05
