@@ -19,11 +19,12 @@ from RedisManager import RedisManager
 import Yamler
 
 RedisConfig = Yamler.getConfigDict("Configs/RedisConfig.yaml")
+DMAConfig = Yamler.getConfigDict("Configs/DMAConfig.yaml")
 
 
-def getAverageResultFromRedisQueue(redis, queue, queueRange):
+def getAverageResultFromRedisQueue(redis, queue, emotions):
     assert isinstance(queue, str)
-    assert isinstance(queueRange, int)
+    assert isinstance(emotions, list)
     avg = {}
     resList = []
     print(queue + ": " + str(redis.getRedisQueueLen(queue)))
@@ -31,7 +32,7 @@ def getAverageResultFromRedisQueue(redis, queue, queueRange):
         elem = redis.lPopFromRedisQueue(queue)
         if isinstance(elem, bytes):
             elem = elem.decode()
-        resList.append(ast.literal_eval(elem)[0])
+        resList.append(ast.literal_eval(elem))
     print(resList)  # Test
     happinessSum = 0
     neutralSum = 0
@@ -41,30 +42,37 @@ def getAverageResultFromRedisQueue(redis, queue, queueRange):
     resN = len(resList)
     if resN != 0:
         for elem in resList:
-            happinessSum += elem['happiness']
-            neutralSum += elem['neutral']
-            sadnessSum += elem['sadness']
-            fearSum += elem['fear']
-            disgustSum += elem['disgust']
+            if isinstance(elem, dict) and set(emotions) <= set(elem.keys()):
+                happinessSum += elem['happiness']
+                neutralSum += elem['neutral']
+                sadnessSum += elem['sadness']
+                fearSum += elem['fear']
+                disgustSum += elem['disgust']
         avg = {'happiness': happinessSum/resN, 'neutral': neutralSum/resN, 'sadness': sadnessSum/resN,
                 'fear': fearSum/resN, 'disgust': disgustSum/resN}
     return avg
 
 
-def facialVocalCompare(facialRes, vocalRes, facialW=2, vocalW=1):
+def facialVocalCompare(facialRes, vocalRes, emotions, facialW=2, vocalW=1):
     assert isinstance(facialRes, dict)
     assert isinstance(vocalRes, dict)
     assert isinstance(facialW, int) or isinstance(facialW, float)
     assert isinstance(vocalW, int) or isinstance(vocalW, float)
+    assert isinstance(emotions, list)
     res = {}
     tot = facialW + vocalW
-    for emo in ['happiness', 'neutral', 'sadness', 'fear', 'angry']:
-        res[emo] = (facialRes[emo] * facialW + vocalRes[emo] * vocalW) / tot
+    if isinstance(facialRes, dict) and isinstance(vocalRes, dict) and set(emotions) <= set(facialRes.keys()) \
+            and set(emotions) <= set(vocalRes.keys()):
+        for emo in emotions:
+            res[emo] = (facialRes[emo] * facialW + vocalRes[emo] * vocalW) / tot
+    elif isinstance(facialRes, dict) and set(emotions) <= set(facialRes.keys()):
+        res = facialRes
+    elif isinstance(vocalRes, dict) and set(emotions) <= set(vocalRes.keys()):
+        res = vocalRes
     return res
 
 
 def main():
-    queueRange = 10
     r = RedisManager(host=RedisConfig['host'], port=RedisConfig['port'], db=RedisConfig['db'],
                      password=RedisConfig['password'], decodedResponses=RedisConfig['decodedResponses'])
     sub = r.getRedisPubSub()
@@ -75,10 +83,10 @@ def main():
             if newMsg['type'] == 'message':
                 print("Vocal Result: " + str(newMsg))  # Test
                 vocalRes = ast.literal_eval(newMsg['data'].decode())
-                facialRes = getAverageResultFromRedisQueue(r, RedisConfig['FacialQueue'], queueRange)
-                facialVocal = facialVocalCompare(facialRes, vocalRes)
+                facialRes = getAverageResultFromRedisQueue(r, queue=RedisConfig['FacialQueue'],
+                                                           emotions=DMAConfig['emotions'])
+                facialVocal = facialVocalCompare(facialRes, vocalRes, emotions=DMAConfig['emotions'])
                 print(facialVocal)
-
 
 
 if __name__ == '__main__':
