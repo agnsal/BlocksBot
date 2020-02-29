@@ -14,6 +14,8 @@ See the License for the specific language governing permissions and limitations 
 '''
 
 import ast
+import collections
+from pyDatalog import pyDatalog
 
 from RedisManager import RedisManager
 import Yamler
@@ -77,6 +79,9 @@ def main():
                      password=RedisConfig['password'], decodedResponses=RedisConfig['decodedResponses'])
     sub = r.getRedisPubSub()
     sub.subscribe(RedisConfig['VocalChannel'])
+
+    behaviourFilePath = 'behaviour.dl'
+
     while True:
         newMsg = sub.get_message()
         if newMsg:
@@ -86,7 +91,13 @@ def main():
                 facialRes = getAverageResultFromRedisQueue(r, queue=RedisConfig['FacialQueue'],
                                                            emotions=DMAConfig['emotions'])
                 facialVocal = facialVocalCompare(facialRes, vocalRes, emotions=DMAConfig['emotions'])
-                print(facialVocal)
+                print(facialVocal)  # Test
+                sortedEmotions = {k: v for k, v in sorted(facialVocal.items(), key=lambda item: item[1])}
+                print(sortedEmotions)  # Test
+                sortedEmoList = list(sortedEmotions.items())
+                topEmotions = dict([sortedEmoList[-1], sortedEmoList[-2]])
+                print(topEmotions)
+
 
 
 if __name__ == '__main__':
