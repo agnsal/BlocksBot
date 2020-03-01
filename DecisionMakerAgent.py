@@ -15,6 +15,7 @@ See the License for the specific language governing permissions and limitations 
 
 import ast
 from pyDatalog import pyDatalog
+from TimeManager import getTimestamp
 
 from RedisManager import RedisManager
 import Yamler
@@ -52,6 +53,7 @@ def getAverageEmotionsFromRedisQueue(redis, queue, emotions):
         avg = {'happiness': happinessSum/resN, 'neutral': neutralSum/resN, 'sadness': sadnessSum/resN,
                 'fear': fearSum/resN, 'disgust': disgustSum/resN}
     return avg
+
 
 def getAverageAttitudeFromRedisQueue(redis, queue):
     assert isinstance(queue, str)
@@ -141,13 +143,12 @@ def main():
                      password=RedisConfig['password'], decodedResponses=RedisConfig['decodedResponses'])
     sub = r.getRedisPubSub()
     sub.subscribe(RedisConfig['VocalChannel'])
-
     learn()
-
     while True:
         newMsg = sub.get_message()
         if newMsg:
             if newMsg['type'] == 'message':
+                now = getTimestamp()
                 print("Vocal Result: " + str(newMsg))  # Test
                 vocalRes = ast.literal_eval(newMsg['data'].decode())
                 facialRes = getAverageEmotionsFromRedisQueue(r, queue=RedisConfig['FacialQueue'],
@@ -161,24 +162,27 @@ def main():
                     firstEmotion = sortedEmoList[-1]
                     secondEmotion = sortedEmoList[-2]
                     topEmotions = dict([firstEmotion, secondEmotion])
-                    print(topEmotions)
+                    # print(topEmotions)  # Test
                     decision = firstEmotion
                     diff = 0
                     for k in topEmotions:
                         diff -= topEmotions[k]
                     diff = abs(diff)
                     if diff <= DMAConfig['poseTestThreshold']:
-                        print(diff)  # Test
                         attitude = getAverageAttitudeFromRedisQueue(r, queue=RedisConfig['PoseQueue'])
                         if attitude:
-                            + firstAvgEmo(str(firstEmotion).replace("}", '').split(":")[0])
-                            + secondAvgEmo(str(secondEmotion).replace("}", '').split(":")[0])
-                            + poseAttitude(attitude)
+                            pyDatalog.assert_fact('firstAvgEmo', str(firstEmotion))
+                            pyDatalog.assert_fact('secondAvgEmo', str(secondEmotion))
+                            pyDatalog.assert_fact('poseAttitude', str(attitude))
                             decision = str(pyDatalog.ask("takeDecision(D)"))
-                            - firstEmo(str(firstEmotion).replace("}", '').split(":")[0])
-                            - secondEmo(str(secondEmotion).replace("}", '').split(":")[0])
-                            - poseAttitude(attitude)
+                            pyDatalog.retract_fact('firstEmo', str(firstEmotion))
+                            pyDatalog.retract_fact('secondEmo', str(secondEmotion))
+                            pyDatalog.retract_fact('poseAttitude', str(attitude))
                     print("Decision: " + str(decision))  # Test
+                r.deleteRedisElemsByKeyPatternAndTimestamp(RedisConfig['imageHsetRoot'] + '*', now,
+                                                           DMAConfig['timeThreshold'])
+                r.deleteRedisElemsByKeyPatternAndTimestamp(RedisConfig['audioHsetRoot'] + '*', now,
+                                                           DMAConfig['timeThreshold'])
 
 
 

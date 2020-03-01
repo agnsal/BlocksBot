@@ -136,3 +136,25 @@ class RedisManager:
         assert isinstance(queue, str)
         return self.__redis.llen(queue)
 
+    def getRedisElemsByKeyPattern(self, pattern):
+        assert isinstance(pattern, str)
+        return self.__redis.keys(pattern)
+
+    def deleteRedisElemsByKeyPattern(self, pattern):
+        assert isinstance(pattern, str)
+        keys = self.__redis.keys(pattern)
+        for k in keys:
+            self.__redis.delete(k)
+
+    def deleteRedisElemsByKeyPatternAndTimestamp(self, pattern, now, threshold):
+        assert isinstance(pattern, str)
+        assert isinstance(now, int) or isinstance(now, float)
+        assert isinstance(threshold, int) or isinstance(threshold, float)
+        keys = self.__redis.keys(pattern)
+        for k in keys:
+            if not isinstance(k, str):
+                k = k.decode()
+            pattern = pattern.replace('*', '')
+            oldTime = str(k).replace(pattern, '')
+            if now - float(oldTime) >= threshold:
+                self.__redis.delete(k)
