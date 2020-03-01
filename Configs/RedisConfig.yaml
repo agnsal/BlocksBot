@@ -22,3 +22,5 @@ audioHsetVocalResultField: "VEA"
 FacialQueue: "FEAQueue"
 PoseQueue: "PEAQueue"
 VocalChannel: "VEAReady"
+
+DecisionSet: "decision"

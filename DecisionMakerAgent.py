@@ -34,7 +34,10 @@ def getAverageEmotionsFromRedisQueue(redis, queue, emotions):
         elem = redis.lPopFromRedisQueue(queue)
         if isinstance(elem, bytes):
             elem = elem.decode()
-        resList.append(ast.literal_eval(elem))
+        elem = ast.literal_eval(elem)
+        if isinstance(elem, list) and len(elem) > 0:
+            elem = elem[0]
+        resList.append(elem)
     print(resList)  # Test
     happinessSum = 0
     neutralSum = 0
@@ -64,7 +67,11 @@ def getAverageAttitudeFromRedisQueue(redis, queue):
         elem = redis.lPopFromRedisQueue(queue)
         if isinstance(elem, bytes):
             elem = elem.decode()
-        resList.append(ast.literal_eval(elem))
+        elem = ast.literal_eval(elem)
+        if isinstance(elem, list) and len(elem) > 0:
+            elem = elem[0]
+        resList.append(elem)
+        resList.append(elem)
     print(resList)  # Test
     attitude = 0
     resN = len(resList)
@@ -178,6 +185,7 @@ def main():
                             pyDatalog.retract_fact('firstEmo', str(firstEmotion))
                             pyDatalog.retract_fact('secondEmo', str(secondEmotion))
                             pyDatalog.retract_fact('poseAttitude', str(attitude))
+                    r.setOnRedis(key=RedisConfig['DecisionSet'], value=str(decision))
                     print("Decision: " + str(decision))  # Test
                 r.deleteRedisElemsByKeyPatternAndTimestamp(RedisConfig['imageHsetRoot'] + '*', now,
                                                            DMAConfig['timeThreshold'])
