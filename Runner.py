@@ -31,9 +31,8 @@ def parallelRur(f):
 
 def main():
     agents = RunnerConfig['RunnableAgents']
-    for f in agents:
-        with Pool(len(agents)) as p:
-            p.map(parallelRur, agents)
+    with Pool(len(agents)) as p:
+        p.map(parallelRur, agents)
 
 
 if __name__ == '__main__':
