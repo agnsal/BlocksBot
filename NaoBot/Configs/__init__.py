@@ -20,3 +20,5 @@ EmotionConfig = {'emotions': ['happiness', 'neutral', 'sadness', 'fear', 'angry'
                      'fear': "^start(animations/Stand/Gestures/No_3)",
                      'angry': "^start(animations/Stand/Gestures/No_3)",
                  }}
+
+RunnerConfig = {'RunnableAgents': ["AudioNaoBotManager.py", "VideoNaoBotManager.py", "ReactionNaoBotManager.py"]}
