@@ -13,17 +13,14 @@ an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express o
 See the License for the specific language governing permissions and limitations under the License
 '''
 
+
 from naoqi import ALProxy
-import vision_definitions
+import time
+import wave
 
 from RedisManager import RedisManager
 from TimeManager import getTimestamp
 from Configs import RedisConfig, NaoConfig
-
-import time
-import wave
-
-from naoqi import ALProxy
 
 
 def setAudioToRedis(redis, audioFile, channels, rate):
