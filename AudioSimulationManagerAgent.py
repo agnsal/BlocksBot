@@ -20,6 +20,7 @@ from RedisManager import RedisManager
 import Yamler
 
 RedisConfig = Yamler.getConfigDict("Configs/RedisConfig.yaml")
+SimConfig = Yamler.getConfigDict("Configs/SimulationConfig.yaml")
 
 
 def audioRecordToRedis(redis, audioSeconds, format, channels, rate, framesPerBuffer):
@@ -47,15 +48,12 @@ def audioRecordToRedis(redis, audioSeconds, format, channels, rate, framesPerBuf
 
 
 def main():
-    format = pyaudio.paInt16
-    channels = 2
-    rate = 44100
-    framesPerBuffer = 1024
-    audioSeconds = 5
     r = RedisManager(host=RedisConfig['host'], port=RedisConfig['port'], db=RedisConfig['db'],
                      password=RedisConfig['password'], decodedResponses=RedisConfig['decodedResponses'])
     while True:
-        audioRecordToRedis(r, audioSeconds, format, channels, rate, framesPerBuffer)
+        audioRecordToRedis(r, audioSeconds=SimConfig['audioSeconds'], format=pyaudio.paInt16,
+                           channels=SimConfig['audioNChannels'], rate=SimConfig['audioRate'],
+                           framesPerBuffer=SimConfig['audioFramesPerBuffer'])
 
 
 if __name__ == '__main__':

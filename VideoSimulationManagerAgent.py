@@ -23,6 +23,7 @@ from RedisManager import RedisManager
 import Yamler
 
 RedisConfig = Yamler.getConfigDict("Configs/RedisConfig.yaml")
+SimConfig = Yamler.getConfigDict("Configs/SimulationConfig.yaml")
 
 
 def stepTurnNeckR(simulation, stepAngle=0.5):
@@ -120,23 +121,17 @@ def saveImageOnRedis(redis, img):
 
 
 def main():
-    naoFile = "RobotsModels/NAO.json"
-    faceCascadeFile = "CascadeFiles/haarcascade_frontalface_alt_tree.xml"
-    deltaFrames = 50
-    moveRangeO = 100
-    moveRangeV = 20
-
     s = Simulation()
     s.connect()
     simNao = SimulationRobotBody("naoSim1", "Naetto", "NAO")
-    simNao.buildFormJsonFile(naoFile)
+    simNao.buildFormJsonFile(SimConfig['naoFile'])
     s.addSimRobot(simNao)
     simNao.printComponents()
     s.setSimRobotsComponetsStateAndHandles()
     simNao.printComponents()
     initialPose(s)
 
-    faceCascade = cv2.CascadeClassifier(faceCascadeFile)
+    faceCascade = cv2.CascadeClassifier(SimConfig['faceCascadeFile'])
     cap = cv2.VideoCapture(0)
 
     r = RedisManager(host=RedisConfig['host'], port=RedisConfig['port'], db=RedisConfig['db'],
@@ -150,13 +145,13 @@ def main():
         faces = faceCascade.detectMultiScale(gray, 1.1, 4)
         cv2.imshow('img', img)
         # print(i)  # Test
-        if i == deltaFrames:
+        if i == SimConfig['videoDeltaFrames']:
             print("Save on Redis")  # test
             saveImageOnRedis(r, img)
             i = 0
         if len(faces) > 0:
             points = analyzeImage(img, faces)
-            behaviour(s, points, moveRangeO, moveRangeV)
+            behaviour(s, points, SimConfig['moveRangeO'], SimConfig['moveRangeV'])
         decision = r.getFromRedis(RedisConfig['DecisionSet'])
         if not isinstance(decision, str):
             decision = decision.decode()
