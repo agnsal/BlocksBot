@@ -29,6 +29,7 @@ See the License for the specific language governing permissions and limitations 
 '''
 
 import os
+import time
 
 from RedisManager import RedisManager
 from Configs import RunnerConfig, RedisConfig, DeployPath, PythonExecutable
@@ -60,6 +61,12 @@ def main():
                     parallelRun(DeployPath + a)
                     pList.append(a)
             elif newMsg == "stop" and len(pList) > 0:
+                time.sleep(1)
+                pList = []
+                print("Stopped")
+            elif newMsg == "exit":
+                r.publishOnRedis(channel=RedisConfig['StartStopChannel'], msg="stop")
+                time.sleep(1)
                 print("The End")
                 return
 

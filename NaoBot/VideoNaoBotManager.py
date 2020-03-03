@@ -40,7 +40,17 @@ def main():
     camSub = camProxy.subscribe("python_client", resolution, colorSpace, NaoConfig['imageFPS'])
     r = RedisManager(host=RedisConfig['host'], port=RedisConfig['port'], db=RedisConfig['db'],
                      password=RedisConfig['password'], decodedResponses=RedisConfig['decodedResponses'])
+    sub = r.getRedisPubSub()
+    sub.subscribe(RedisConfig['StartStopChannel'])
     while True:
+        newMsg = sub.get_message()
+        if newMsg:
+            if newMsg['type'] == 'message':
+                command = newMsg['data']
+                if not isinstance(command, str):
+                    command = command.decode()
+                if command == "stop":
+                    break
         naoImage = camProxy.getImageRemote(camSub)
         im = Image.fromstring("RGB", (naoImage[0], naoImage[1]), naoImage[6])
         buffer = cStringIO.StringIO()
@@ -48,6 +58,7 @@ def main():
         imgB64 = base64.b64encode(buffer.getvalue())
         saveImageOnRedis(r, imgB64)
         time.sleep(NaoConfig['videoSleepSec'])
+    camProxy.unsubscribe(camSub)
 
 
 if __name__ == '__main__':
