@@ -17,6 +17,7 @@ See the License for the specific language governing permissions and limitations 
 from naoqi import ALProxy
 import time
 import wave
+import base64
 
 from RedisManager import RedisManager
 from TimeManager import getTimestamp
@@ -32,9 +33,11 @@ def setAudioToRedis(redis, audioFile, channels, rate):
     nFrames = audio.getnframes()
     frames = audio.readframes(nFrames)
     params = {'channels': channels, 'sampwidth': audio.getsampwidth(), 'rate': rate}
-    redisStr = "[" + str(frames) + ", " + str(params) + "]"
+    redisB64 = base64.b64encode(frames)
     redis.hsetOnRedis(key=RedisConfig['audioHsetRoot']+str(timestamp), field=RedisConfig['audioHsetB64Field'],
-                      value=redisStr)
+                      value=redisB64)
+    redis.hsetOnRedis(key=RedisConfig['audioHsetRoot'] + str(timestamp), field=RedisConfig['audioHsetParamsField'],
+                      value=str(params))
     redis.publishOnRedis(channel=RedisConfig['newAudioPubSubChannel'],
                          msg=RedisConfig['newAudioMsgRoot']+str(timestamp))
 
@@ -42,7 +45,17 @@ def main():
     audioProxy = ALProxy("ALAudioRecorder", NaoConfig['IP'], NaoConfig['PORT'])
     r = RedisManager(host=RedisConfig['host'], port=RedisConfig['port'], db=RedisConfig['db'],
                      password=RedisConfig['password'], decodedResponses=RedisConfig['decodedResponses'])
+    sub = r.getRedisPubSub()
+    sub.subscribe(RedisConfig['StartStopChannel'])
     while True:
+        newMsg = sub.get_message()
+        if newMsg:
+            if newMsg['type'] == 'message':
+                command = newMsg['data']
+                if not isinstance(command, str):
+                    command = command.decode()
+                if command == "stop":
+                    break
         audioProxy.startMicrophonesRecording(NaoConfig['audioFile'], "wav", NaoConfig['audioSampleRate'],
                                              NaoConfig['audioChannels'])
         time.sleep(NaoConfig['audioSeconds'])

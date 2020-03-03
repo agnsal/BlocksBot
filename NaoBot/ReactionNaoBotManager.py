@@ -25,17 +25,42 @@ import ast
 def main():
     r = RedisManager(host=RedisConfig['host'], port=RedisConfig['port'], db=RedisConfig['db'],
                      password=RedisConfig['password'], decodedResponses=RedisConfig['decodedResponses'])
+    subD = r.getRedisPubSub()
+    subD.subscribe(RedisConfig['newDecisionPubSubChannel'])
+    sub = r.getRedisPubSub()
+    sub.subscribe(RedisConfig['StartStopChannel'])
+    tts = ALProxy("ALAnimatedSpeech", NaoConfig['IP'], NaoConfig['PORT'])
+    motionProxy = ALProxy("ALMotion", NaoConfig['IP'], NaoConfig['PORT'])
+    postureProxy = ALProxy("ALRobotPosture", NaoConfig['IP'], NaoConfig['PORT'])
+    motionProxy.wakeUp()  # Wake up robot
+    postureProxy.goToPosture("StandInit", 0.5)  # Send robot to Stand Init
     while True:
-        currentDecision = r.getFromRedis(RedisConfig['DecisionSet'])
-        if isinstance(currentDecision, bytes):
-            currentDecision.decode()
-        currentDecision = ast.literal_eval(currentDecision)
-        currentEmotion = currentDecision[0]
-        if currentEmotion in EmotionConfig['emotions']:
-            tts = ALProxy("ALTextToSpeech", NaoConfig['IP'], NaoConfig['PORT'])
-            reaction = EmotionConfig['NaoReactions'][currentEmotion]
-            tts.say("Current emotion is: " + reaction + " " + currentEmotion)
+        newMsg = sub.get_message()
+        newD = subD.get_message()
+        if newMsg:
+            if newMsg['type'] == 'message':
+                command = newMsg['data']
+                if not isinstance(command, str):
+                    command = command.decode()
+                if command == "stop":
+                    break
+        elif newD:
+            print(newD)
+            if newD['type'] == 'message':
+                decision = newD['data']
+                if isinstance(decision, bytes):
+                    decision = decision.decode()
+                decision = ast.literal_eval(decision)
+                currentEmotion = decision[0]
+                print(currentEmotion)
+                if currentEmotion in EmotionConfig['emotions']:
+                    print("working...")
+                    reaction = EmotionConfig['NaoReactions'][currentEmotion]
+                    ita = EmotionConfig['NaoTranslate'][currentEmotion]
+                    tts.say("^start(" + reaction + ") " + ita + " ^wait(" + reaction + ")")
+        print("Reading...")
         time.sleep(NaoConfig['reactionSleepSec'])
+    motionProxy.rest()  # Go to rest position
 
 
 if __name__ == '__main__':

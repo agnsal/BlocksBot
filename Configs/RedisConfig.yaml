@@ -1,4 +1,4 @@
-host: "localhost"
+host: "192.168.0.103"
 port: 6379
 db: 0
 password: ""
@@ -17,6 +17,7 @@ imageHsetPoseResultField: "PEA"
 
 audioHsetRoot: "audio_"
 audioHsetB64Field: "b64"
+audioHsetParamsField: "params"
 audioHsetVocalResultField: "VEA"
 
 FacialQueue: "FEAQueue"
@@ -24,3 +25,4 @@ PoseQueue: "PEAQueue"
 VocalChannel: "VEAReady"
 
 DecisionSet: "decision"
+newDecisionPubSubChannel: "decisionReady"

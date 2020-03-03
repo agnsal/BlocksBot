@@ -40,9 +40,10 @@ def audioRecordToRedis(redis, audioSeconds, format, channels, rate, framesPerBuf
     stream.close()
     audio.terminate()
     params = {'channels': channels, 'sampwidth': audio.get_sample_size(format), 'rate': rate}
-    redisStr = "[" + str(frames) + ", " + str(params) + "]"
     redis.hsetOnRedis(key=RedisConfig['audioHsetRoot']+str(timestamp), field=RedisConfig['audioHsetB64Field'],
-                      value=redisStr)
+                      value=str(frames))
+    redis.hsetOnRedis(key=RedisConfig['audioHsetRoot'] + str(timestamp), field=RedisConfig['audioHsetParamsField'],
+                      value=str(params))
     redis.publishOnRedis(channel=RedisConfig['newAudioPubSubChannel'],
                          msg=RedisConfig['newAudioMsgRoot']+str(timestamp))
 

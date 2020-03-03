@@ -6,6 +6,10 @@ RunnableAgents:
   - "AudioSimulationManagerAgent.py"
   - "VideoSimulationManagerAgent.py"
 
+SimAgents:
+  - "AudioSimulationManagerAgent.py"
+  - "VideoSimulationManagerAgent.py"
+
 NaoAgents:
   - "AudioNaoBotManager.py"
   - "VideoNaoBotManager.py"

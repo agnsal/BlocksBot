@@ -24,13 +24,9 @@ import Yamler
 RedisConfig = Yamler.getConfigDict("Configs/RedisConfig.yaml")
 
 
-def extractEmotionsFromAudioFile(audioContent):
-    assert isinstance(audioContent, str)
+def extractEmotionsFromAudioFile(frames, params):
     emotions = {}
     print("Reading sound file...")  # Test
-    data = ast.literal_eval(audioContent)
-    frames = data[0]
-    params = data[1]
     waveFile = wave.open("audio.wav", 'wb')
     waveFile.setnchannels(int(params['channels']))
     waveFile.setsampwidth(params['sampwidth'])
@@ -75,10 +71,15 @@ def main():
                 print("New Msg: " + str(newMsg))  # Test
                 audioID = newMsg['data'].decode()
                 audioContent = r.hgetFromRedis(key=audioID, field=RedisConfig['audioHsetB64Field'])
+                audioParams = r.hgetFromRedis(key=audioID, field=RedisConfig['audioHsetParamsField'])
                 if audioContent:
+                    if isinstance(audioParams, bytes):
+                        audioParams = audioParams.decode('utf-8')
                     if isinstance(audioContent, bytes):
-                        audioContent = audioContent.decode()
-                    audioEmotions = extractEmotionsFromAudioFile(audioContent)
+                        audioContent = audioContent.decode('utf-8')
+                    audioParams = ast.literal_eval(audioParams)
+                    audioContent = ast.literal_eval(audioContent)
+                    audioEmotions = extractEmotionsFromAudioFile(audioContent, audioParams)
                     print(audioEmotions)  # Test
                     r.publishOnRedis(channel=RedisConfig['VocalChannel'], msg=str(audioEmotions))
                     r.hsetOnRedis(key=audioID, field=RedisConfig['audioHsetVocalResultField'], value=str(audioEmotions))

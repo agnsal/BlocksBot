@@ -186,6 +186,7 @@ def main():
                             pyDatalog.retract_fact('secondEmo', str(secondEmotion))
                             pyDatalog.retract_fact('poseAttitude', str(attitude))
                     r.setOnRedis(key=RedisConfig['DecisionSet'], value=str(decision))
+                    r.publishOnRedis(channel=RedisConfig['newDecisionPubSubChannel'], msg=str(decision))
                     print("Decision: " + str(decision))  # Test
                 r.deleteRedisElemsByKeyPatternAndTimestamp(RedisConfig['imageHsetRoot'] + '*', now,
                                                            DMAConfig['timeThreshold'])

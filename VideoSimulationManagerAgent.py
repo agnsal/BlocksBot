@@ -153,10 +153,11 @@ def main():
             points = analyzeImage(img, faces)
             behaviour(s, points, SimConfig['moveRangeO'], SimConfig['moveRangeV'])
         decision = r.getFromRedis(RedisConfig['DecisionSet'])
-        if not isinstance(decision, str):
-            decision = decision.decode()
-        s.printInAuxiliryConsoleWindow(console=outputW, msg=decision)
-        s.printInAuxiliryConsoleWindow(console=outputW, msg='\n')
+        if decision:
+            if not isinstance(decision, str):
+                decision = decision.decode()
+            s.printInAuxiliryConsoleWindow(console=outputW, msg=decision)
+            s.printInAuxiliryConsoleWindow(console=outputW, msg='\n')
         # Stop if escape key is pressed
         k = cv2.waitKey(30) & 0xff
         if k == 27:
