@@ -1,10 +1,10 @@
 # coding : utf-8
 
 RedisConfig = {'host': "192.168.0.103", 'port': 6379, 'db': 0, 'password': "", 'decodedResponses': False,
-               'newImagePubSubChannel': "imageReady", 'newImageMsgRoot': "image",
-               'newAudioPubSubChannel': "audioReady", 'newAudioMsgRoot': "audio", 'imageHsetRoot': "image",
+               'newImagePubSubChannel': "imageReady", 'newImageMsgRoot': "image_",
+               'newAudioPubSubChannel': "audioReady", 'newAudioMsgRoot': "audio_", 'imageHsetRoot': "image_",
                'imageHsetB64Field': "b64", 'imageHsetFacialResultField': "FEA", 'imageHsetPoseResultField': "PEA",
-               'audioHsetRoot': "audio", 'audioHsetB64Field': "b64", 'audioHsetParamsField': "params",
+               'audioHsetRoot': "audio_", 'audioHsetB64Field': "b64", 'audioHsetParamsField': "params",
                'audioHsetVocalResultField': "VEA",
                'FacialQueue': "FEAQueue", 'PoseQueue': "PEAQueue", 'VocalChannel': "VEAReady",
                'DecisionSet': "decision", 'newDecisionPubSubChannel': "decisionReady", 'StartStopChannel': "StartStop"}
@@ -32,8 +32,8 @@ EmotionConfig = {'emotions': ['happiness', 'neutral', 'sadness', 'fear', 'angry'
                  }
 }
 
-RunnerConfig = {'RunnableAgents': ["ReactionNaoBotManager.py"]}
-# "AudioNaoBotManager.py", "VideoNaoBotManager.py",
+RunnerConfig = {'RunnableAgents': ["ReactionNaoBotManager.py", "AudioNaoBotManager.py"]}
+# "VideoNaoBotManager.py",
 
 DeployPath = "/home/nao/NaoBot/"
 

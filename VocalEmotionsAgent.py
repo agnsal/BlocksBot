@@ -17,6 +17,7 @@ import scipy.io.wavfile
 import Vokaturi
 import wave
 import ast
+import base64
 
 from RedisManager import RedisManager
 import Yamler
@@ -75,10 +76,10 @@ def main():
                 if audioContent:
                     if isinstance(audioParams, bytes):
                         audioParams = audioParams.decode('utf-8')
-                    if isinstance(audioContent, bytes):
-                        audioContent = audioContent.decode('utf-8')
+                    audioContent = audioContent.decode('utf-8')
+                    audioContent = base64.b64decode(audioContent)
+                    print(type(audioContent))
                     audioParams = ast.literal_eval(audioParams)
-                    audioContent = ast.literal_eval(audioContent)
                     audioEmotions = extractEmotionsFromAudioFile(audioContent, audioParams)
                     print(audioEmotions)  # Test
                     r.publishOnRedis(channel=RedisConfig['VocalChannel'], msg=str(audioEmotions))

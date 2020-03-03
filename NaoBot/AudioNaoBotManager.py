@@ -17,7 +17,7 @@ See the License for the specific language governing permissions and limitations 
 from naoqi import ALProxy
 import time
 import wave
-import base64
+import pickle
 
 from RedisManager import RedisManager
 from TimeManager import getTimestamp
@@ -33,9 +33,9 @@ def setAudioToRedis(redis, audioFile, channels, rate):
     nFrames = audio.getnframes()
     frames = audio.readframes(nFrames)
     params = {'channels': channels, 'sampwidth': audio.getsampwidth(), 'rate': rate}
-    redisB64 = base64.b64encode(frames)
+    redisB64 = pickle.dumps(frames)
     redis.hsetOnRedis(key=RedisConfig['audioHsetRoot']+str(timestamp), field=RedisConfig['audioHsetB64Field'],
-                      value=redisB64)
+                      value=redisB64.encode('utf-8'))
     redis.hsetOnRedis(key=RedisConfig['audioHsetRoot'] + str(timestamp), field=RedisConfig['audioHsetParamsField'],
                       value=str(params))
     redis.publishOnRedis(channel=RedisConfig['newAudioPubSubChannel'],
@@ -56,10 +56,12 @@ def main():
                     command = command.decode()
                 if command == "stop":
                     break
+        print("Recording...")
         audioProxy.startMicrophonesRecording(NaoConfig['audioFile'], "wav", NaoConfig['audioSampleRate'],
                                              NaoConfig['audioChannels'])
         time.sleep(NaoConfig['audioSeconds'])
         audioProxy.stopMicrophonesRecording()
+        print("Recorded.")
         setAudioToRedis(r, audioFile=NaoConfig['audioFile'], channels=NaoConfig['nAudioCh'],
                         rate=NaoConfig['audioSampleRate'])
 

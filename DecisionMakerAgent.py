@@ -175,8 +175,8 @@ def main():
                     for k in topEmotions:
                         diff -= topEmotions[k]
                     diff = abs(diff)
+                    attitude = getAverageAttitudeFromRedisQueue(r, queue=RedisConfig['PoseQueue'])
                     if diff <= DMAConfig['poseTestThreshold']:
-                        attitude = getAverageAttitudeFromRedisQueue(r, queue=RedisConfig['PoseQueue'])
                         if attitude:
                             pyDatalog.assert_fact('firstAvgEmo', str(firstEmotion))
                             pyDatalog.assert_fact('secondAvgEmo', str(secondEmotion))
