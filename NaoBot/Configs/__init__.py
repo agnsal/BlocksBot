@@ -4,7 +4,7 @@ RedisConfig = {'host': "192.168.0.103", 'port': 6379, 'db': 0, 'password': "", '
                'imageHsetB64Field': "b64", 'imageHsetFacialResultField': "FEA", 'imageHsetPoseResultField': "PEA",
                'audioHsetRoot': "audio", 'audioHsetB64Field': "b64", 'audioHsetVocalResultField': "VEA",
                'FacialQueue': "FEAQueue", 'PoseQueue': "PEAQueue", 'VocalChannel': "VEAReady",
-               'DecisionSet': "decision"}
+               'DecisionSet': "decision", 'StartStopChannel': "StartStop"}
 
 NaoConfig = {'IP': "192.168.0.100", 'PORT': 9559, 'imageFPS': 15,
              'audioFile': "/data/home/nao/recordings/microphones/audio.wav", 'audioSeconds': 5,
@@ -22,3 +22,7 @@ EmotionConfig = {'emotions': ['happiness', 'neutral', 'sadness', 'fear', 'angry'
                  }}
 
 RunnerConfig = {'RunnableAgents': ["AudioNaoBotManager.py", "VideoNaoBotManager.py", "ReactionNaoBotManager.py"]}
+
+DeployPath = "/home/nao/NaoBot/"
+
+PythonExecutable = "/usr/bin/python"
