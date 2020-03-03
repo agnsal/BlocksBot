@@ -39,7 +39,7 @@ def setAudioToRedis(redis, audioFile, channels, rate):
                          msg=RedisConfig['newAudioMsgRoot']+str(timestamp))
 
 def main():
-    audioProxy = ALProxy("ALAudioDevice", NaoConfig['IP'], NaoConfig['PORT'])
+    audioProxy = ALProxy("ALAudioRecorder", NaoConfig['IP'], NaoConfig['PORT'])
     r = RedisManager(host=RedisConfig['host'], port=RedisConfig['port'], db=RedisConfig['db'],
                      password=RedisConfig['password'], decodedResponses=RedisConfig['decodedResponses'])
     while True:

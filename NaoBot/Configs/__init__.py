@@ -7,7 +7,7 @@ RedisConfig = {'host': "192.168.0.103", 'port': 6379, 'db': 0, 'password': "", '
                'DecisionSet': "decision", 'StartStopChannel': "StartStop"}
 
 NaoConfig = {'IP': "192.168.0.100", 'PORT': 9559, 'imageFPS': 15,
-             'audioFile': "/data/home/nao/recordings/microphones/audio.wav", 'audioSeconds': 5,
+             'audioFile': "/home/nao/recordings/microphones/audio.wav", 'audioSeconds': 5,
              'audioSampleRate': 16000, 'audioChannels': [1, 0, 0, 0], 'nAudioCh': 1, 'reactionSleepSec': 5,
              'videoSleepSec': 0.1}
 # audioChannels = [front, rear, left, right]
