@@ -24,3 +24,5 @@ VocalChannel: "VEAReady"
 
 DecisionSet: "decision"
 newDecisionPubSubChannel: "decisionReady"
+
+StartStopChannel: "StartStop"

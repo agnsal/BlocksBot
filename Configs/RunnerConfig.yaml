@@ -4,12 +4,8 @@ RunnableAgents:
   - "PoseEmotionsAgent.py"
   - "VocalEmotionsAgent.py"
   - "VideoSimulationManagerAgent.py"
-
-SimAgents:
   - "AudioSimulationManagerAgent.py"
   - "VideoSimulationManagerAgent.py"
 
 NaoAgents:
-  - "AudioNaoBotManager.py"
-  - "VideoNaoBotManager.py"
   - "ReactionNaoBotManager.py"

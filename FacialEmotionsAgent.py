@@ -51,32 +51,34 @@ def main():
                      password=RedisConfig['password'], decodedResponses=RedisConfig['decodedResponses'])
     sub = r.getRedisPubSub()
     sub.subscribe(RedisConfig['newImagePubSubChannel'])
-    while True:
-        newMsg = sub.get_message()
-        detectedEmotions = []
-        if newMsg:
-            if newMsg['type'] == 'message':
-                print("New Msg: " + str(newMsg))  # Test
-                imgID = newMsg['data'].decode()
-                img = r.hgetFromRedis(key=imgID, field=RedisConfig['imageHsetB64Field'])
-                if img:
-                    if not isinstance(img, bytes):
-                        img = base64.b64encode(img)
-                    data = getFacesAndEmotions(img)
-                    if data:
-                        print(data)  # Test
-                        if "faces" in data.keys():
-                            faces = data['faces']
-                            for elem in faces:
-                                detectedEmotions.append(elem['attributes']['emotion'])
-                            print("Detected emotions: " + str(detectedEmotions))  # Test
-                            r.rPushToRedisQueue(queue=RedisConfig['FacialQueue'], item=str(detectedEmotions))
-                            r.hsetOnRedis(key=imgID, field=RedisConfig['imageHsetFacialResultField'],
-                                          value=str(detectedEmotions))
-                        else:
-                            print("No face detected")  # Test
+    for item in sub.listen():
+        print(item)  # Test
+        if item['type'] == 'message':
+            newMsg = item['data']
+            print("New Msg: " + str(newMsg))  # Test
+            if not isinstance(newMsg, str):
+                newMsg = newMsg.decode()
+            detectedEmotions = []
+            imgID = newMsg
+            img = r.hgetFromRedis(key=imgID, field=RedisConfig['imageHsetB64Field'])
+            if img:
+                if not isinstance(img, bytes):
+                    img = base64.b64encode(img)
+                data = getFacesAndEmotions(img)
+                if data:
+                    print(data)  # Test
+                    if "faces" in data.keys():
+                        faces = data['faces']
+                        for elem in faces:
+                            detectedEmotions.append(elem['attributes']['emotion'])
+                        print("Detected emotions: " + str(detectedEmotions))  # Test
+                        r.rPushToRedisQueue(queue=RedisConfig['FacialQueue'], item=str(detectedEmotions))
+                        r.hsetOnRedis(key=imgID, field=RedisConfig['imageHsetFacialResultField'],
+                                      value=str(detectedEmotions))
                     else:
-                        print("No data detected")  # Test
+                        print("No face detected")  # Test
+                else:
+                    print("No data detected")  # Test
 
 
 if __name__ == '__main__':

@@ -65,27 +65,28 @@ def main():
                      password=RedisConfig['password'], decodedResponses=RedisConfig['decodedResponses'])
     sub = r.getRedisPubSub()
     sub.subscribe(RedisConfig['newAudioPubSubChannel'])
-    while True:
-        newMsg = sub.get_message()
-        if newMsg:
-            if newMsg['type'] == 'message':
-                print("New Msg: " + str(newMsg))  # Test
-                audioID = newMsg['data'].decode()
-                audioContent = r.hgetFromRedis(key=audioID, field=RedisConfig['audioHsetB64Field'])
-                audioParams = r.hgetFromRedis(key=audioID, field=RedisConfig['audioHsetParamsField'])
-                if audioContent:
-                    if isinstance(audioParams, bytes):
-                        audioParams = audioParams.decode('utf-8')
+    for item in sub.listen():
+        print(item)  # Test
+        if item['type'] == 'message':
+            newMsg = item['data']
+            print("New Msg: " + str(newMsg))  # Test
+            if not isinstance(newMsg, str):
+                newMsg = newMsg.decode()
+            audioID = newMsg
+            audioContent = r.hgetFromRedis(key=audioID, field=RedisConfig['audioHsetB64Field'])
+            audioParams = r.hgetFromRedis(key=audioID, field=RedisConfig['audioHsetParamsField'])
+            if audioContent:
+                if isinstance(audioParams, bytes):
+                    audioParams = audioParams.decode('utf-8')
+                if isinstance(audioContent, bytes):
                     audioContent = audioContent.decode('utf-8')
-                    print(audioContent[0:8])
-                    audioContent = base64.b64decode(audioContent)
-                    audioContent = ast.literal_eval(audioContent.decode('utf-8'))
-                    print(audioContent[0:8])
-                    audioParams = ast.literal_eval(audioParams)
-                    audioEmotions = extractEmotionsFromAudioFile(audioContent, audioParams)
-                    print(audioEmotions)  # Test
-                    r.publishOnRedis(channel=RedisConfig['VocalChannel'], msg=str(audioEmotions))
-                    r.hsetOnRedis(key=audioID, field=RedisConfig['audioHsetVocalResultField'], value=str(audioEmotions))
+                audioContent = base64.b64decode(audioContent)
+                audioContent = ast.literal_eval(audioContent.decode('utf-8'))
+                audioParams = ast.literal_eval(audioParams)
+                audioEmotions = extractEmotionsFromAudioFile(audioContent, audioParams)
+                print(audioEmotions)  # Test
+                r.publishOnRedis(channel=RedisConfig['VocalChannel'], msg=str(audioEmotions))
+                r.hsetOnRedis(key=audioID, field=RedisConfig['audioHsetVocalResultField'], value=str(audioEmotions))
 
 
 if __name__ == '__main__':

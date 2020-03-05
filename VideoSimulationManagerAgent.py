@@ -136,6 +136,9 @@ def main():
 
     r = RedisManager(host=RedisConfig['host'], port=RedisConfig['port'], db=RedisConfig['db'],
                      password=RedisConfig['password'], decodedResponses=RedisConfig['decodedResponses'])
+    sub = r.getRedisPubSub()
+    sub.subscribe(RedisConfig['newDecisionPubSubChannel'])
+
     i = 0
     outputW = s.createAuxiliaryConsoleWindow("Emotion Detection")[1]
     while True:
@@ -152,11 +155,11 @@ def main():
         if len(faces) > 0:
             points = analyzeImage(img, faces)
             behaviour(s, points, SimConfig['moveRangeO'], SimConfig['moveRangeV'])
-        decision = r.getFromRedis(RedisConfig['DecisionSet'])
+        decision = sub.get_message()
         if decision:
-            if not isinstance(decision, str):
+            if isinstance(decision, bytes):
                 decision = decision.decode()
-            s.printInAuxiliryConsoleWindow(console=outputW, msg=decision)
+            s.printInAuxiliryConsoleWindow(console=outputW, msg=str(decision))
             s.printInAuxiliryConsoleWindow(console=outputW, msg='\n')
         # Stop if escape key is pressed
         k = cv2.waitKey(30) & 0xff

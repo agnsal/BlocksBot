@@ -61,24 +61,26 @@ def main():
                      password=RedisConfig['password'], decodedResponses=RedisConfig['decodedResponses'])
     sub = r.getRedisPubSub()
     sub.subscribe(RedisConfig['newImagePubSubChannel'])
-    while True:
-        newMsg = sub.get_message()
-        detectedAttitudes = []
-        if newMsg:
-            if newMsg['type'] == 'message':
-                print("New Msg: " + str(newMsg))  # Test
-                imgID = newMsg['data'].decode()
-                img = r.hgetFromRedis(key=imgID, field=RedisConfig['imageHsetB64Field'])
-                if img:
-                    if not isinstance(img, bytes):
-                        img = base64.b64encode(img)
-                    data = getBodies(img)
-                    bodies = data['skeletons']
-                    for elem in bodies:
-                        detectedAttitudes.append(getAttitude(elem, errorThreshold))
-                    r.rPushToRedisQueue(queue=RedisConfig['PoseQueue'], item=str(detectedAttitudes))
-                    r.hsetOnRedis(key=imgID, field=RedisConfig['imageHsetPoseResultField'], value=str(detectedAttitudes))
-                    print("Detected Attitudes: " + str(detectedAttitudes))  # Test
+    for item in sub.listen():
+        print(item)  # Test
+        if item['type'] == 'message':
+            newMsg = item['data']
+            print("New Msg: " + str(newMsg))  # Test
+            if not isinstance(newMsg, str):
+                newMsg = newMsg.decode()
+            detectedAttitudes = []
+            imgID = newMsg
+            img = r.hgetFromRedis(key=imgID, field=RedisConfig['imageHsetB64Field'])
+            if img:
+                if not isinstance(img, bytes):
+                    img = base64.b64encode(img)
+                data = getBodies(img)
+                bodies = data['skeletons']
+                for elem in bodies:
+                    detectedAttitudes.append(getAttitude(elem, errorThreshold))
+                r.rPushToRedisQueue(queue=RedisConfig['PoseQueue'], item=str(detectedAttitudes))
+                r.hsetOnRedis(key=imgID, field=RedisConfig['imageHsetPoseResultField'], value=str(detectedAttitudes))
+                print("Detected Attitudes: " + str(detectedAttitudes))  # Test
 
 
 if __name__ == '__main__':
