@@ -39,7 +39,7 @@ def setAudioToRedis(redis, audioFile, channels, rate):
     redis.hsetOnRedis(key=RedisConfig['audioHsetRoot'] + str(timestamp), field=RedisConfig['audioHsetParamsField'],
                       value=str(params))
     redis.publishOnRedis(channel=RedisConfig['newAudioPubSubChannel'],
-                         msg=RedisConfig['newAudioMsgRoot']+str(timestamp))
+                         msg=RedisConfig['audioHsetRoot']+str(timestamp))
 
 def main():
     audioProxy = ALProxy("ALAudioRecorder", NaoConfig['IP'], NaoConfig['PORT'])

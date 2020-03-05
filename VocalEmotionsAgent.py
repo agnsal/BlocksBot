@@ -77,8 +77,10 @@ def main():
                     if isinstance(audioParams, bytes):
                         audioParams = audioParams.decode('utf-8')
                     audioContent = audioContent.decode('utf-8')
+                    print(audioContent[0:8])
                     audioContent = base64.b64decode(audioContent)
-                    print(type(audioContent))
+                    audioContent = ast.literal_eval(audioContent.decode('utf-8'))
+                    print(audioContent[0:8])
                     audioParams = ast.literal_eval(audioParams)
                     audioEmotions = extractEmotionsFromAudioFile(audioContent, audioParams)
                     print(audioEmotions)  # Test

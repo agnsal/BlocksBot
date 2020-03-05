@@ -117,7 +117,7 @@ def saveImageOnRedis(redis, img):
     redis.hsetOnRedis(key=RedisConfig['imageHsetRoot']+str(timestamp), field=RedisConfig['imageHsetB64Field'],
                       value=base64Capture)
     redis.publishOnRedis(channel=RedisConfig['newImagePubSubChannel'],
-                         msg=RedisConfig['newImageMsgRoot']+str(timestamp))
+                         msg=RedisConfig['imageHsetRoot']+str(timestamp))
 
 
 def main():

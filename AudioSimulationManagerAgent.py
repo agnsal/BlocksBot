@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and limitations 
 '''
 
 import pyaudio
+import base64
 
 from TimeManager import getTimestamp
 from RedisManager import RedisManager
@@ -39,13 +40,17 @@ def audioRecordToRedis(redis, audioSeconds, format, channels, rate, framesPerBuf
     stream.stop_stream()
     stream.close()
     audio.terminate()
+    print("Frames 1:" + str(frames[0:8]))
+    frames = str(frames).encode('utf-8')
+    frames = base64.b64encode(frames)
+    print("Frames 2: " + str(frames[0:8]))
     params = {'channels': channels, 'sampwidth': audio.get_sample_size(format), 'rate': rate}
     redis.hsetOnRedis(key=RedisConfig['audioHsetRoot']+str(timestamp), field=RedisConfig['audioHsetB64Field'],
-                      value=str(frames))
+                      value=frames)
     redis.hsetOnRedis(key=RedisConfig['audioHsetRoot'] + str(timestamp), field=RedisConfig['audioHsetParamsField'],
                       value=str(params))
     redis.publishOnRedis(channel=RedisConfig['newAudioPubSubChannel'],
-                         msg=RedisConfig['newAudioMsgRoot']+str(timestamp))
+                         msg=RedisConfig['audioHsetRoot']+str(timestamp))
 
 
 def main():
