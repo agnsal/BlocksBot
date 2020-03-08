@@ -61,12 +61,11 @@ def main():
                     parallelRun(DeployPath + a)
                     pList.append(a)
             elif newMsg == "stop" and len(pList) > 0:
-                r.publishOnRedis(channel=RedisConfig['StartStopChannel'], msg="stopped")
                 time.sleep(1)
                 pList = []
                 print("Stopped")
             elif newMsg == "exit":
-                r.publishOnRedis(channel=RedisConfig['StartStopChannel'], msg="exited")
+                r.publishOnRedis(channel=RedisConfig['StartStopChannel'], msg="stop")
                 time.sleep(1)
                 print("The End")
                 return
