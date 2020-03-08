@@ -1,0 +1,5 @@
+API_KEY: ''
+API_SECRET: ''
+
+DETECT_URL: 'https://api-us.faceplusplus.com/facepp/v3/detect'
+SKELETON_URL: 'https://api-us.faceplusplus.com/humanbodypp/v1/skeleton'
