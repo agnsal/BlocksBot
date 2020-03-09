@@ -130,7 +130,7 @@ def learn():
     # -, -, _ (-, -, + problem ???????????)
     takeDecision(X) <= firstEmo(X) & secondEmo(Y) & attitude(A) & negative(X) & negative(Y)
     # +, +, _ (+, +, - problem ???????????)
-    takeDecision(X) <= firstEmo(X) & secondEmo(Y) & attitude(A) & negative(X) & negative(Y)
+    takeDecision(X) <= firstEmo(X) & secondEmo(Y) & attitude(A) & positive(X) & positive(Y)
 
     # 0, +, +
     takeDecision(Y) <= firstEmo(X) & secondEmo(Y) & attitude(A) & neutral(X) & positive(Y) & positive(A)
