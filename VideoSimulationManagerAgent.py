@@ -157,6 +157,7 @@ def main():
             behaviour(s, points, SimConfig['moveRangeO'], SimConfig['moveRangeV'])
         decision = sub.get_message()
         if decision:
+            decision = decision['data']
             if isinstance(decision, bytes):
                 decision = decision.decode()
             s.printInAuxiliryConsoleWindow(console=outputW, msg=str(decision))
