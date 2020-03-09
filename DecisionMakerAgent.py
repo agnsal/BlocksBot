@@ -128,9 +128,9 @@ def learn():
     takeDecision(X) <= firstEmo(X) & secondEmo(Y) & attitude(A) & negative(X) & neutral(Y) & negative(A)
 
     # -, -, _ (-, -, + problem ???????????)
-    takeDecision(X) <= firstEmo(X) & secondEmo(Y) & attitude(A) & negative(X) & negative(Y) & neutral(A)
+    takeDecision(X) <= firstEmo(X) & secondEmo(Y) & attitude(A) & negative(X) & negative(Y)
     # +, +, _ (+, +, - problem ???????????)
-    takeDecision(X) <= firstEmo(X) & secondEmo(Y) & attitude(A) & negative(X) & negative(Y) & neutral(A)
+    takeDecision(X) <= firstEmo(X) & secondEmo(Y) & attitude(A) & negative(X) & negative(Y)
 
     # 0, +, +
     takeDecision(Y) <= firstEmo(X) & secondEmo(Y) & attitude(A) & neutral(X) & positive(Y) & positive(A)
@@ -160,7 +160,8 @@ def main():
                 vocalRes = ast.literal_eval(newMsg['data'].decode())
                 facialRes = getAverageEmotionsFromRedisQueue(r, queue=RedisConfig['FacialQueue'],
                                                            emotions=DMAConfig['emotions'])
-                facialVocal = facialVocalCompare(facialRes, vocalRes, emotions=DMAConfig['emotions'])
+                facialVocal = facialVocalCompare(facialRes, vocalRes, emotions=DMAConfig['emotions'],
+                                                 facialW=DMAConfig['facialWeight'], vocalW=DMAConfig['vocalWeight'])
                 print(facialVocal)  # Test
                 if facialVocal:
                     sortedEmotions = {k: v for k, v in sorted(facialVocal.items(), key=lambda item: item[1])}
