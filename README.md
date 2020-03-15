@@ -1,9 +1,10 @@
 # BlocksBot
-Python 3 Framework to build modular Robots, for CoppeliaSim and real world environments.
+Python 3 Framework to build modular Empathic Robots, for CoppeliaSim and real world environments.
 
 ## Dependencies
 
 1. CoppeliaSim: http://www.coppeliarobotics.com/coppeliaSim
+2. Redis: https://redis.io/
 
 ## Contacts
 
