@@ -194,8 +194,7 @@ def main():
                     firstEmotion = sortedEmoList[-1]
                     secondEmotion = sortedEmoList[-2]
                     topEmotions = dict([firstEmotion, secondEmotion])
-                    # print(topEmotions)  # Test
-                    decision = firstEmotion
+                    decisionWithPer = firstEmotion
                     diff = 0
                     for k in topEmotions:
                         diff -= topEmotions[k]
@@ -207,13 +206,14 @@ def main():
                             pyDatalog.assert_fact('firstEmoPercept', firstEmotion[0])
                             pyDatalog.assert_fact('secondEmoPercept', secondEmotion[0])
                             pyDatalog.assert_fact('poseAttitudePercept', attitude)
-                            decision = str(pyDatalog.ask("takeDecision(D)"))
+                            decision = str(pyDatalog.ask("takeDecision(D)")).replace("{('", "").replace("'", "").split(",")[0]
+                            decisionWithPer = (decision, str(topEmotions[decision]))
                             pyDatalog.retract_fact('firstEmoPercept', firstEmotion[0])
                             pyDatalog.retract_fact('secondEmoPercept', secondEmotion[0])
                             pyDatalog.retract_fact('poseAttitudePercept', attitude)
-                    r.setOnRedis(key=RedisConfig['DecisionSet'], value=str(decision))
-                    r.publishOnRedis(channel=RedisConfig['newDecisionPubSubChannel'], msg=str(decision))
-                    print("Decision: " + str(decision))  # Test
+                    r.setOnRedis(key=RedisConfig['DecisionSet'], value=str(decisionWithPer))
+                    r.publishOnRedis(channel=RedisConfig['newDecisionPubSubChannel'], msg=str(decisionWithPer))
+                    print("Decision: " + str(decisionWithPer))  # Test
                 r.deleteRedisElemsByKeyPatternAndTimestamp(RedisConfig['imageHsetRoot'] + '*', now,
                                                            DMAConfig['timeThreshold'])
                 r.deleteRedisElemsByKeyPatternAndTimestamp(RedisConfig['audioHsetRoot'] + '*', now,
