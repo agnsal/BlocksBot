@@ -85,6 +85,8 @@ def main():
                 audioParams = ast.literal_eval(audioParams)
                 audioEmotions = extractEmotionsFromAudioFile(audioContent, audioParams)
                 print(audioEmotions)  # Test
+                if not audioEmotions:
+                    audioEmotions = RedisConfig['voidMsg']
                 r.publishOnRedis(channel=RedisConfig['VocalChannel'], msg=str(audioEmotions))
                 r.hsetOnRedis(key=audioID, field=RedisConfig['audioHsetVocalResultField'], value=str(audioEmotions))
 

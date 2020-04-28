@@ -47,7 +47,12 @@ def getAverageEmotionsFromRedisQueue(redis, queue, emotions):
     resN = len(resList)
     if resN != 0:
         for elem in resList:
-            if isinstance(elem, dict) and set(emotions) <= set(elem.keys()):
+            print("emoElem: " + str(elem))
+            print(emotions)
+            print(list(elem.keys()))
+            print(type(list(elem.keys())))
+            if isinstance(elem, dict) and any(elem in emotions for elem in list(elem.keys())):
+                print('ok')
                 happinessSum += elem['happiness']
                 neutralSum += elem['neutral']
                 sadnessSum += elem['sadness']
@@ -102,18 +107,29 @@ def facialVocalCompare(facialRes, vocalRes, emotions, facialW=2, vocalW=1):
     return res
 
 def learn():
-    pyDatalog.create_terms('positive, neutral, negative, firstEmo, secondEmo, poseAttitude, X, Y, A, takeDecision, D, H, I, K')
+    pyDatalog.create_terms('attitudeLThreshold, attitudeRThreshold, firstEmoPercept, secondEmoPercept, '
+                           'poseAttitudePercept, takeDecision, D, negativeEmotion, positiveEmotion, neutralEmotion')
     print("Learning started...")
-    pyDatalog.assert_fact('positive', 'happiness')
-    pyDatalog.assert_fact('neutral', 'neutral')
-    pyDatalog.assert_fact('negative', 'sadness')
-    pyDatalog.assert_fact('negative', 'fear')
-    pyDatalog.assert_fact('negative', 'angry')
+    pyDatalog.assert_fact('attitudeLThreshold', DMAConfig['attitudeLThreshold'])
+    pyDatalog.assert_fact('attitudeRThreshold', DMAConfig['attitudeRThreshold'])
 
     pyDatalog.load("""
-    firstEmo(X) <= firstAvgEmo(X)
-    secondEmo(Y) <= secondAvgEmo(Y)
-    attitude(A) <= poseAttitude(A)
+    positiveEmotion('happiness')
+    neutralEmotion('neutral')
+    negativeEmotion('sadness')
+    negativeEmotion('fear')
+    negativeEmotion('angry')
+    
+    positive(P) <= positiveEmotion(P)
+    positive(P) <= attitude(P) & attitudeRTreshold(R) & (P >= R)
+    neutral(O) <= neutralEmotion(O)
+    neutral(O) <= neutralAttitude(O) & attitudeRTreshold(R) & (R > P) & attitudeLTreshold(L) & (P < L)
+    negative(N) <= negativeEmotion(N)
+    negative(N) <= attitude(N) & attitudeLTreshold(L) & (P <= L)
+    
+    firstEmo(X) <= firstEmoPercept(X)
+    secondEmo(Y) <= secondEmoPercept(Y)
+    attitude(A) <= poseAttitudePercept(A)
 
     takeDecision(X) <= firstEmo(X) & secondEmo(Y) & attitude(A) & neutral(Y) & neutral(A)
     takeDecision(Y) <= firstEmo(X) & secondEmo(Y) & attitude(A) & neutral(X) & neutral(A)
@@ -156,13 +172,18 @@ def main():
         if newMsg:
             if newMsg['type'] == 'message':
                 now = getTimestamp()
+                msgContent = newMsg['data'].decode()
                 print("Vocal Result: " + str(newMsg))  # Test
-                vocalRes = ast.literal_eval(newMsg['data'].decode())
                 facialRes = getAverageEmotionsFromRedisQueue(r, queue=RedisConfig['FacialQueue'],
                                                            emotions=DMAConfig['emotions'])
-                facialVocal = facialVocalCompare(facialRes, vocalRes, emotions=DMAConfig['emotions'],
+                print("msgContent: " + str(msgContent))
+                if msgContent == str(RedisConfig['voidMsg']):
+                    facialVocal = facialRes
+                else:
+                    vocalRes = ast.literal_eval(msgContent)
+                    facialVocal = facialVocalCompare(facialRes, vocalRes, emotions=DMAConfig['emotions'],
                                                  facialW=DMAConfig['facialWeight'], vocalW=DMAConfig['vocalWeight'])
-                print(facialVocal)  # Test
+                print("FACIAL VOCAL:" + str(facialVocal))  # Test
                 if facialVocal:
                     sortedEmotions = {k: v for k, v in sorted(facialVocal.items(), key=lambda item: item[1])}
                     print(sortedEmotions)  # Test
@@ -177,15 +198,16 @@ def main():
                         diff -= topEmotions[k]
                     diff = abs(diff)
                     attitude = getAverageAttitudeFromRedisQueue(r, queue=RedisConfig['PoseQueue'])
+                    print("DATA: " + str(firstEmotion) + ", " + str(secondEmotion) + ", " + str(attitude))
                     if diff <= DMAConfig['poseTestThreshold']:
                         if attitude:
-                            pyDatalog.assert_fact('firstAvgEmo', str(firstEmotion))
-                            pyDatalog.assert_fact('secondAvgEmo', str(secondEmotion))
-                            pyDatalog.assert_fact('poseAttitude', str(attitude))
+                            pyDatalog.assert_fact('firstEmoPercept', firstEmotion[0])
+                            pyDatalog.assert_fact('secondEmoPercept', secondEmotion[0])
+                            pyDatalog.assert_fact('poseAttitudePercept', attitude)
                             decision = str(pyDatalog.ask("takeDecision(D)"))
-                            pyDatalog.retract_fact('firstEmo', str(firstEmotion))
-                            pyDatalog.retract_fact('secondEmo', str(secondEmotion))
-                            pyDatalog.retract_fact('poseAttitude', str(attitude))
+                            pyDatalog.retract_fact('firstEmoPercept', firstEmotion[0])
+                            pyDatalog.retract_fact('secondEmoPercept', secondEmotion[0])
+                            pyDatalog.retract_fact('poseAttitudePercept', attitude)
                     r.setOnRedis(key=RedisConfig['DecisionSet'], value=str(decision))
                     r.publishOnRedis(channel=RedisConfig['newDecisionPubSubChannel'], msg=str(decision))
                     print("Decision: " + str(decision))  # Test

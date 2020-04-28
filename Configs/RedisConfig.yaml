@@ -26,3 +26,5 @@ DecisionSet: "decision"
 newDecisionPubSubChannel: "decisionReady"
 
 StartStopChannel: "StartStop"
+
+voidMsg: 0
