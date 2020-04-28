@@ -107,20 +107,18 @@ def learn():
     print("Learning started...")
     pyDatalog.assert_fact('attitudeLThreshold', DMAConfig['attitudeLThreshold'])
     pyDatalog.assert_fact('attitudeRThreshold', DMAConfig['attitudeRThreshold'])
+    pyDatalog.assert_fact('positiveEmotion', 'happiness')
+    pyDatalog.assert_fact('neutralEmotion', 'neutral')
+    for negEmo in ['sadness', 'fear', 'angry']:
+        pyDatalog.assert_fact('negativeEmotion', negEmo)
 
-    pyDatalog.load("""
-    positiveEmotion('happiness')
-    neutralEmotion('neutral')
-    negativeEmotion('sadness')
-    negativeEmotion('fear')
-    negativeEmotion('angry')
-    
+    pyDatalog.load("""    
     positive(P) <= positiveEmotion(P)
-    positive(P) <= attitude(P) & attitudeRTreshold(R) & (P >= R)
+    positive(P) <= attitude(P) & attitudeRThreshold(R) & (P >= R)
     neutral(O) <= neutralEmotion(O)
-    neutral(O) <= neutralAttitude(O) & attitudeRTreshold(R) & (R > P) & attitudeLTreshold(L) & (P < L)
+    neutral(O) <= attitude(O) & attitudeRThreshold(R) & (R > O) & attitudeLThreshold(L) & (O > L)
     negative(N) <= negativeEmotion(N)
-    negative(N) <= attitude(N) & attitudeLTreshold(L) & (P <= L)
+    negative(N) <= attitude(N) & attitudeLThreshold(L) & (N <= L)
     
     firstEmo(X) <= firstEmoPercept(X)
     secondEmo(Y) <= secondEmoPercept(Y)
@@ -151,6 +149,17 @@ def learn():
     takeDecision(Y) <= firstEmo(X) & secondEmo(Y) & attitude(A) & positive(X) & neutral(Y) & negative(A)
     # -, 0, +
     takeDecision(Y) <= firstEmo(X) & secondEmo(Y) & attitude(A) & negative(X) & neutral(Y) & positive(A)
+    
+    # _, _, 0
+    takeDecision(X) <= firstEmo(X) & secondEmo(Y) & attitude(A) & neutral(A)
+    # -, +, +
+    takeDecision(Y) <= firstEmo(X) & secondEmo(Y) & attitude(A) & negative(X) & positive(Y) & positive(A)
+    # -, +, -
+    takeDecision(X) <= firstEmo(X) & secondEmo(Y) & attitude(A) & negative(X) & positive(Y) & negative(A)
+    # +, -, -
+    takeDecision(Y) <= firstEmo(X) & secondEmo(Y) & attitude(A) & positive(X) & negative(Y) & negative(A)
+    # +, -, +
+    takeDecision(X) <= firstEmo(X) & secondEmo(Y) & attitude(A) & positive(X) & negative(Y) & positive(A)
     """)
 
     print("Learning finished")
@@ -171,7 +180,6 @@ def main():
                 print("Vocal Result: " + str(newMsg))  # Test
                 facialRes = getAverageEmotionsFromRedisQueue(r, queue=RedisConfig['FacialQueue'],
                                                            emotions=DMAConfig['emotions'])
-                print("msgContent: " + str(msgContent))
                 if msgContent == str(RedisConfig['voidMsg']):
                     facialVocal = facialRes
                 else:
