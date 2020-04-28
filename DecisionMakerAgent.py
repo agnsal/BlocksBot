@@ -47,12 +47,7 @@ def getAverageEmotionsFromRedisQueue(redis, queue, emotions):
     resN = len(resList)
     if resN != 0:
         for elem in resList:
-            print("emoElem: " + str(elem))
-            print(emotions)
-            print(list(elem.keys()))
-            print(type(list(elem.keys())))
             if isinstance(elem, dict) and any(elem in emotions for elem in list(elem.keys())):
-                print('ok')
                 happinessSum += elem['happiness']
                 neutralSum += elem['neutral']
                 sadnessSum += elem['sadness']
