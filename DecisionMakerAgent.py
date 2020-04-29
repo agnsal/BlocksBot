@@ -126,7 +126,7 @@ def learn():
     estimations(X, Y, A) <= firstEmo(X) & secondEmo(Y) & attitude(A)
 
     takeDecision(X) <= estimations(X, Y, A) & neutral(Y) & neutral(A)
-    takeDecision(Y) <= festimations(X, Y, A) & neutral(X) & neutral(A)
+    takeDecision(Y) <= estimations(X, Y, A) & neutral(X) & neutral(A)
 
     # 0, +, -
     takeDecision(X) <= estimations(X, Y, A) & neutral(X) & positive(Y) & negative(A)
