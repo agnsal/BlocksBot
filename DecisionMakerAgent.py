@@ -123,43 +123,44 @@ def learn():
     firstEmo(X) <= firstEmoPercept(X)
     secondEmo(Y) <= secondEmoPercept(Y)
     attitude(A) <= poseAttitudePercept(A)
+    estimations(X, Y, A) <= firstEmo(X) & secondEmo(Y) & attitude(A)
 
-    takeDecision(X) <= firstEmo(X) & secondEmo(Y) & attitude(A) & neutral(Y) & neutral(A)
-    takeDecision(Y) <= firstEmo(X) & secondEmo(Y) & attitude(A) & neutral(X) & neutral(A)
+    takeDecision(X) <= estimations(X, Y, A) & neutral(Y) & neutral(A)
+    takeDecision(Y) <= festimations(X, Y, A) & neutral(X) & neutral(A)
 
     # 0, +, -
-    takeDecision(X) <= firstEmo(X) & secondEmo(Y) & attitude(A) & neutral(X) & positive(Y) & negative(A)
+    takeDecision(X) <= estimations(X, Y, A) & neutral(X) & positive(Y) & negative(A)
     # 0, -, +
-    takeDecision(X) <= firstEmo(X) & secondEmo(Y) & attitude(A) & neutral(X) & negative(Y) & positive(A)
+    takeDecision(X) <= estimations(X, Y, A) & neutral(X) & negative(Y) & positive(A)
     # +, 0, +
-    takeDecision(X) <= firstEmo(X) & secondEmo(Y) & attitude(A) & positive(X) & neutral(Y) & positive(A)
+    takeDecision(X) <= estimations(X, Y, A) & positive(X) & neutral(Y) & positive(A)
     # -, 0, -
-    takeDecision(X) <= firstEmo(X) & secondEmo(Y) & attitude(A) & negative(X) & neutral(Y) & negative(A)
+    takeDecision(X) <= estimations(X, Y, A) & negative(X) & neutral(Y) & negative(A)
 
-    # -, -, _ (-, -, + problem ???????????)
-    takeDecision(X) <= firstEmo(X) & secondEmo(Y) & attitude(A) & negative(X) & negative(Y)
-    # +, +, _ (+, +, - problem ???????????)
-    takeDecision(X) <= firstEmo(X) & secondEmo(Y) & attitude(A) & positive(X) & positive(Y)
+    # -, -, _ 
+    takeDecision(X) <= estimations(X, Y, A) & negative(X) & negative(Y)
+    # +, +, _ 
+    takeDecision(X) <= estimations(X, Y, A) & positive(X) & positive(Y)
 
     # 0, +, +
-    takeDecision(Y) <= firstEmo(X) & secondEmo(Y) & attitude(A) & neutral(X) & positive(Y) & positive(A)
+    takeDecision(Y) <= estimations(X, Y, A) & neutral(X) & positive(Y) & positive(A)
     # 0, -, -
-    takeDecision(Y) <= firstEmo(X) & secondEmo(Y) & attitude(A) & neutral(X) & negative(Y) & negative(A)
+    takeDecision(Y) <= estimations(X, Y, A) & neutral(X) & negative(Y) & negative(A)
     # +, 0, -
-    takeDecision(Y) <= firstEmo(X) & secondEmo(Y) & attitude(A) & positive(X) & neutral(Y) & negative(A)
+    takeDecision(Y) <= estimations(X, Y, A) & positive(X) & neutral(Y) & negative(A)
     # -, 0, +
-    takeDecision(Y) <= firstEmo(X) & secondEmo(Y) & attitude(A) & negative(X) & neutral(Y) & positive(A)
+    takeDecision(Y) <= estimations(X, Y, A) & negative(X) & neutral(Y) & positive(A)
     
     # _, _, 0
-    takeDecision(X) <= firstEmo(X) & secondEmo(Y) & attitude(A) & neutral(A)
+    takeDecision(X) <= estimations(X, Y, A) & neutral(A)
     # -, +, +
-    takeDecision(Y) <= firstEmo(X) & secondEmo(Y) & attitude(A) & negative(X) & positive(Y) & positive(A)
+    takeDecision(Y) <= estimations(X, Y, A) & negative(X) & positive(Y) & positive(A)
     # -, +, -
-    takeDecision(X) <= firstEmo(X) & secondEmo(Y) & attitude(A) & negative(X) & positive(Y) & negative(A)
+    takeDecision(X) <= estimations(X, Y, A) & negative(X) & positive(Y) & negative(A)
     # +, -, -
-    takeDecision(Y) <= firstEmo(X) & secondEmo(Y) & attitude(A) & positive(X) & negative(Y) & negative(A)
+    takeDecision(Y) <= estimations(X, Y, A) & positive(X) & negative(Y) & negative(A)
     # +, -, +
-    takeDecision(X) <= firstEmo(X) & secondEmo(Y) & attitude(A) & positive(X) & negative(Y) & positive(A)
+    takeDecision(X) <= estimations(X, Y, A) & positive(X) & negative(Y) & positive(A)
     """)
 
     print("Learning finished")
