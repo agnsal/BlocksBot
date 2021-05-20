@@ -1,0 +1,11 @@
+naoFile: "RobotsModels/NAO.json"
+
+faceCascadeFile: "CascadeFiles/haarcascade_frontalface_alt_tree.xml"
+videoDeltaFrames: 50
+moveRangeO: 100
+moveRangeV: 20
+
+audioNChannels: 2
+audioRate: 44100
+audioFramesPerBuffer: 1024
+audioSeconds: 5

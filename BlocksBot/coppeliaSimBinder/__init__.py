@@ -292,6 +292,23 @@ class Simulation:
         mode = self.getProperSimMode(blocking)
         return sim.simxSetJointTargetVelocity(self.__clientID, handle, velocity, mode)
 
+    def createAuxiliaryConsoleWindow(self, windowName, closeAtSimEnd=True, maxLines=5, position=None, size=None):
+        '''
+        Creates and returns an auxiliary console window.
+        '''
+        assert isinstance(windowName, str)
+        assert isinstance(closeAtSimEnd, bool)
+        assert isinstance(maxLines, int)
+        console = sim.simxAuxiliaryConsoleOpen(clientID=self.__clientID, title=windowName, position=position, mode=closeAtSimEnd,
+                                            size=size, operationMode=sim.simx_opmode_blocking, textColor=(0,0,0),
+                                            backgroundColor=None, maxLines=maxLines)
+        return console
+
+    def printInAuxiliryConsoleWindow(self, console, msg, blocking=False):
+        assert isinstance(msg, str)
+        mode = self.getProperSimMode(blocking)
+        sim.simxAuxiliaryConsolePrint(self.__clientID, console, msg, mode)
+
 
 def main():
     from BlocksBot import SimulationRobotBody

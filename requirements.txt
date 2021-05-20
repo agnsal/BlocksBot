@@ -1,0 +1,6 @@
+requests
+opencv-python
+redis
+PyAudio
+scipy
+pyYAML

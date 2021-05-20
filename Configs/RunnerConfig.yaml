@@ -1,0 +1,10 @@
+RunnableAgents:
+  - "DecisionMakerAgent.py"
+  - "FacialEmotionsAgent.py"
+  - "PoseEmotionsAgent.py"
+  - "VocalEmotionsAgent.py"
+  - "VideoSimulationManagerAgent.py"
+  - "AudioSimulationManagerAgent.py"
+
+NaoAgents:
+  - "ReactionNaoBotManager.py"

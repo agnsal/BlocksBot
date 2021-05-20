@@ -1,0 +1,30 @@
+host: "localhost"
+port: 6379
+db: 0
+password: ""
+decodedResponses: False
+
+newImagePubSubChannel: "imageReady"
+
+newAudioPubSubChannel: "audioReady"
+
+imageHsetRoot: "image_"
+imageHsetB64Field: "b64"
+imageHsetFacialResultField: "FEA"
+imageHsetPoseResultField: "PEA"
+
+audioHsetRoot: "audio_"
+audioHsetB64Field: "b64"
+audioHsetParamsField: "params"
+audioHsetVocalResultField: "VEA"
+
+FacialQueue: "FEAQueue"
+PoseQueue: "PEAQueue"
+VocalChannel: "VEAReady"
+
+DecisionSet: "decision"
+newDecisionPubSubChannel: "decisionReady"
+
+StartStopChannel: "StartStop"
+
+voidMsg: 0
