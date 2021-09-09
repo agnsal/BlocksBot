@@ -1,7 +1,7 @@
 # BlocksBot
 Python 3 Framework to build modular Empathic Robots as distributed hybrid systems, for CoppeliaSim and real world environments.
 
-For more info, look at Tesi.pdf presentation and TesiAgneseSalutari.pdf documentation.
+For more info, look at Presentazione.pdf and Tesi.pdf presentations and at TesiAgneseSalutari.pdf documentation.
 
 ## Dependencies
 
